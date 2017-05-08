@@ -1,3 +1,10 @@
+%%% Copyright (c) 2017 Apinf Oy
+%%%
+%%% This file was adapted from vegur_proxy_middleware.erl from vegur
+%%% project. All modifications are licensed under the terms of EUPL 1.1.
+%%%
+%%% The copyright notice accompanying original source follows.
+%%%
 %%% Copyright (c) 2013-2015, Heroku Inc <routing-feedback@heroku.com>.
 %%% All rights reserved.
 %%%
@@ -27,7 +34,7 @@
 %%% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 %%% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 %%% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(vegur_proxy_middleware).
+-module(vegur_proxy42_middleware).
 
 -behaviour(cowboyku_middleware).
 -export([execute/2]).
