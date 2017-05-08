@@ -177,7 +177,7 @@ parse_request(Req) ->
 parse_request(Body, Req) ->
   {InterfaceModule, HandlerState, Req1} = vegur_utils:get_interface_module(Req),
   {BackendReqParams, Req2, HandlerState1} = InterfaceModule:backend_request_params(Body, Req1, HandlerState),
-  Req3 = vegur_utils:set_handler_state(HandlerState1,Req2),
+  Req3 = vegur_utils:set_handler_state(HandlerState1, Req2),
   {BackendReqParams, Req3}.
 
 add_proxy_headers(Headers, Req) ->

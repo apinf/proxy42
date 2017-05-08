@@ -3,7 +3,20 @@
 
 %% @doc Find the 
 domain_config(_Domain, PathInfo) ->
-  DomainGroup = [{"postman-echo.com", 80}],
+  DomainGroup = #{
+    hostname => "httpbin.org"
+   ,frontend_prefix => "/"
+   ,backend_prefix => "/"
+   ,servers => [
+                {http, "httpbin.org", 80}
+               % ,{http, "eu.httpbin.org", 80}
+               % ,{https, "httpbin.org", 443}
+               ]
+   ,strategy => random
+    % request and response
+   ,additional_headers => {[],[]}
+   ,ratelimit => whatever
+   },
   % DomainGroup can be an arbitrary datastructure.
   % This gets passed to checkout_service,
   %   which returns a service, again an arbitrary data structure

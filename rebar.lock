@@ -1,3 +1,4 @@
+{"1.1.0",
 [{<<"cowboyku">>,
   {git,"https://github.com/heroku/cowboyku.git",
        {ref,"60de3bca9909b59305cc69ea39b2c4e2a7e12c06"}},
@@ -26,6 +27,7 @@
   {git,"https://github.com/heroku/ranch_proxy_protocol.git",
        {ref,"0129227305a5b41f0875b337ac75f02f613f81c1"}},
   1},
+ {<<"recon">>,{pkg,<<"recon">>,<<"2.3.2">>},0},
  {<<"uuid">>,
   {git,"https://github.com/okeuday/uuid.git",
        {ref,"4b705b22f5d095970558d904e43c4354bd0e0a7f"}},
@@ -33,4 +35,8 @@
  {<<"vegur">>,
   {git,"https://github.com/heroku/vegur",
        {ref,"7bea099cfc26150406fc7a79b99b6dd9c5a77642"}},
-  0}].
+  0}]}.
+[
+{pkg_hash,[
+ {<<"recon">>, <<"4444C879BE323B1B133EEC5241CB84BD3821EA194C740D75617E106BE4744318">>}]}
+].
