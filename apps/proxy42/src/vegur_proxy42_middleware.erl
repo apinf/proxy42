@@ -37,7 +37,7 @@
 -module(vegur_proxy42_middleware).
 
 -behaviour(cowboyku_middleware).
--export([execute/2]).
+-export([execute/2, add_proxy_headers/2]).
 
 -record(state, { backend_client :: vegur_client:client()
                  ,env
@@ -175,17 +175,10 @@ parse_request(Req) ->
     end.
 
 parse_request(Body, Req) ->
-    {Method, Req2} = cowboyku_req:method(Req),
-    {Path, Req3} = cowboyku_req:path(Req2),
-    {Host, Req4} = cowboyku_req:host(Req3),
-    {Qs, Req5} = cowboyku_req:qs(Req4),
-    {Headers, Req6} = cowboyku_req:headers(Req5),
-    FullPath = case Qs of
-        <<>> -> Path;
-        _ -> <<Path/binary, "?", Qs/binary>>
-    end,
-    {Headers2, Req7} = add_proxy_headers(Headers, Req6),
-    {{Method, Headers2, Body, FullPath, Host}, Req7}.
+  {InterfaceModule, HandlerState, Req1} = vegur_utils:get_interface_module(Req),
+  {BackendReqParams, Req2, HandlerState1} = InterfaceModule:backend_request_params(Body, Req1, HandlerState),
+  Req3 = vegur_utils:set_handler_state(HandlerState1,Req2),
+  {BackendReqParams, Req3}.
 
 add_proxy_headers(Headers, Req) ->
     {Headers1, Req1} = add_request_id(Headers, Req),

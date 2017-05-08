@@ -23,11 +23,10 @@ init(_AcceptTime, Upstream) ->
   {ok, Upstream, state()}.
 
 lookup_domain_name(IncomingDomain, Upstream, State) ->
-  {PathInfo, _Req} = cowboyku_req:path_info(Upstream),
+  {PathInfo, Req1} = cowboyku_req:path_info(Upstream),
   % PathInfo is an array of binaries representing path components between /
-  {ok, DomainGroup, TransformedPath} = proxy42_config:domain_config(IncomingDomain, PathInfo),
-  NewState = maps:put(path, TransformedPath, State),
-  {ok, DomainGroup, Upstream, NewState}.
+  {ok, DomainGroup} = proxy42_config:domain_config(IncomingDomain, PathInfo),
+  {ok, DomainGroup, Req1, State}.
 
 checkout_service(DomainGroup, Upstream, State = #{ tries := Tried }) ->
   Available = DomainGroup -- Tried,
@@ -41,7 +40,7 @@ checkout_service(DomainGroup, Upstream, State = #{ tries := Tried }) ->
       {service, Pick, Upstream, NewState}
   end.
 
-service_backend({_Id, IP, Port}, Upstream, State) ->
+service_backend({IP, Port}, Upstream, State) ->
   %% extract the IP:PORT from the chosen server.
   %% To enable keep-alive, use:
   %% `{{keepalive, {default, {IP,Port}}}, Upstream, State}'
@@ -49,6 +48,20 @@ service_backend({_Id, IP, Port}, Upstream, State) ->
   %% `{{keepalive, {new, {IP,Port}}}, Upstream, State}'
   %% Otherwise, no keepalive is done to the back-end:
   {{IP, Port}, Upstream, State}.
+
+backend_request_params(Body, Upstream, State) ->
+  {Method, Req2} = cowboyku_req:method(Upstream),
+  {Path, Req3} = cowboyku_req:path(Req2),
+  {Host, Req4} = cowboyku_req:host(Req3),
+  {Qs, Req5} = cowboyku_req:qs(Req4),
+  {Headers, Req6} = cowboyku_req:headers(Req5),
+  FullPath = case Qs of
+               <<>> -> Path;
+               _ -> <<Path/binary, "?", Qs/binary>>
+             end,
+  {Headers2, Req7} = vegur_proxy42_middleware:add_proxy_headers(Headers, Req6),
+  Params = {Method, Headers2, Body, FullPath, Host},
+  {Params, Req7, State}.
 
 checkin_service(_Servers, _Pick, _Phase, _ServState, Upstream, State) ->
   %% if we tracked total connections, we would decrement the counters here
