@@ -1,0 +1,17 @@
+{application, proxy42,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { proxy42_app, []}},
+  {applications,
+   [kernel
+   ,stdlib
+   ,vegur
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, []},
+  {links, []}
+ ]}.
