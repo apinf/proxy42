@@ -1,4 +1,4 @@
-%%% Copyright (c) 2017 Apinf Oy
+%%% Modified Work Copyright (c) 2017 Apinf Oy
 %%%
 %%% This file was adapted from vegur_proxy_middleware.erl from vegur
 %%% project. All modifications are licensed under the terms of EUPL 1.1.
@@ -109,13 +109,16 @@ read_backend_response(Req, #state{backend_client=BackendClient}=State) ->
     end.
 
 handle_backend_response(Code, Status, RespHeaders, Req, State) ->
-    Req1 = cowboyku_req:set_meta(response_headers, RespHeaders, Req),
-    {Type, Req2} = cowboyku_req:meta(request_type, Req1, []),
+  {InterfaceModule, HandlerState, Req1} = vegur_utils:get_interface_module(Req),
+  {RespHeaders2, HandlerState1} = InterfaceModule:transform_response_headers(RespHeaders, HandlerState),
+  Req2 = vegur_utils:set_handler_state(HandlerState1, Req1),
+  Req3 = cowboyku_req:set_meta(response_headers, RespHeaders2, Req2),
+    {Type, Req4} = cowboyku_req:meta(request_type, Req3, []),
     case lists:sort(Type) of
         [] ->
-            http_request(Code, Status, RespHeaders, Req2, State);
+            http_request(Code, Status, RespHeaders, Req4, State);
         [upgrade] ->
-            upgrade_request(Code, Status, RespHeaders, Req2, State)
+            upgrade_request(Code, Status, RespHeaders, Req4, State)
     end.
 
 upgrade_request(101, Status, Headers, Req, #state{backend_client=BackendClient}=State) ->

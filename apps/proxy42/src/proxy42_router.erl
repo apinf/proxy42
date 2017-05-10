@@ -7,6 +7,7 @@
          checkin_service/6,
          service_backend/3,
          backend_request_params/3,
+         transform_response_headers/2,
          feature/2,
          additional_headers/4,
          error_page/4]).
@@ -24,9 +25,9 @@ init(_AcceptTime, Upstream) ->
   {ok, Upstream, state()}.
 
 lookup_domain_name(IncomingDomain, Upstream, State) ->
-  {PathInfo, Req1} = cowboyku_req:path_info(Upstream),
+  {Path, Req1} = cowboyku_req:path(Upstream),
   % PathInfo is an array of binaries representing path components between /
-  {ok, DomainGroup} = proxy42_config:domain_config(IncomingDomain, PathInfo),
+  {ok, DomainGroup} = proxy42_config:domain_config(IncomingDomain, Path),
   NewState = maps:put(domain_group, DomainGroup, State),
   {ok, DomainGroup, Req1, NewState}.
 
@@ -53,7 +54,6 @@ service_backend({http, IPorDomain, Port}, Upstream, State) ->
   {{IPorDomain, Port}, Upstream, State}.
 
 backend_request_params(Body, Upstream, State) ->
-  erlang:display("yes"),
   DomainGroup = maps:get(domain_group, State),
   {Method, Req2} = cowboyku_req:method(Upstream),
   {OrigPath, Req3} = cowboyku_req:path(Req2),
@@ -61,18 +61,24 @@ backend_request_params(Body, Upstream, State) ->
   BP = maps:get(backend_prefix, DomainGroup),
   % Replace initial FP in incoming req path with BP
   Path = re:replace(OrigPath, ["^", FP], BP),
-  erlang:display(Path),
   Host = maps:get(hostname, DomainGroup),
   Req4 = Req3,
   {Qs, Req5} = cowboyku_req:qs(Req4),
   {Headers, Req6} = cowboyku_req:headers(Req5),
   FullPath = case Qs of
                <<>> -> Path;
-               _ -> <<Path/binary, "?", Qs/binary>>
+               _ -> [Path, "?", Qs]
              end,
-  {Headers2, Req7} = vegur_proxy42_middleware:add_proxy_headers(Headers, Req6),
-  Params = {Method, Headers2, Body, FullPath, Host},
+  {Headers1, Req7} = vegur_proxy42_middleware:add_proxy_headers(Headers, Req6),
+  Params = {Method, Headers1, Body, FullPath, Host},
+  erlang:display(Params),
   {Params, Req7, State}.
+
+
+transform_response_headers(Headers, State = #{domain_group := DG}) ->
+  NewHost = maps:get(hostname, DG),
+  lists:keyreplace(<<"host">>, 1, Headers, {<<"host">>, NewHost}),
+  {Headers, State}.
 
 checkin_service(_Servers, _Pick, _Phase, _ServState, Upstream, State) ->
   %% if we tracked total connections, we would decrement the counters here
