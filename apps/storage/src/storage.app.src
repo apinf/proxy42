@@ -1,13 +1,11 @@
-{application, proxy42,
- [{description, "An OTP application"},
+{application, storage,
+ [{description, "An OTP application which handles storage"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { proxy42_app, []}},
+  {mod, { storage_app, []}},
   {applications,
    [kernel
    ,stdlib
-   ,vegur
-   ,storage
    ]},
   {env,[]},
   {modules, []},
