@@ -1,5 +1,6 @@
 -module(proxy42_router).
 -behaviour(vegur_interface).
+-include("domain_group.hrl").
 -export([init/2,
          terminate/3,
          lookup_domain_name/3,
@@ -31,8 +32,8 @@ lookup_domain_name(IncomingDomain, Upstream, State) ->
   NewState = maps:put(domain_group, DomainGroup, State),
   {ok, DomainGroup, Req1, NewState}.
 
-checkout_service(DomainGroup = #{strategy := random}, Upstream, State = #{ tries := Tried }) ->
-  Servers = maps:get(servers, DomainGroup),
+checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State = #{ tries := Tried }) ->
+  #domain_group{servers = Servers} = DomainGroup,
   Available = Servers -- Tried,
   case Available of
     [] ->
@@ -57,11 +58,13 @@ backend_request_params(Body, Upstream, State) ->
   DomainGroup = maps:get(domain_group, State),
   {Method, Req2} = cowboyku_req:method(Upstream),
   {OrigPath, Req3} = cowboyku_req:path(Req2),
-  FP = maps:get(frontend_prefix, DomainGroup),
-  BP = maps:get(backend_prefix, DomainGroup),
+  #domain_group{
+    hostname = Host,
+    frontend_prefix = FP,
+    backend_prefix = BP
+  } = DomainGroup,
   % Replace initial FP in incoming req path with BP
   Path = re:replace(OrigPath, ["^", FP], BP),
-  Host = maps:get(hostname, DomainGroup),
   Req4 = Req3,
   {Qs, Req5} = cowboyku_req:qs(Req4),
   {Headers, Req6} = cowboyku_req:headers(Req5),
@@ -76,7 +79,7 @@ backend_request_params(Body, Upstream, State) ->
 
 
 transform_response_headers(Headers, State = #{domain_group := DG}) ->
-  NewHost = maps:get(hostname, DG),
+  #domain_group{hostname = NewHost} = DG,
   lists:keyreplace(<<"host">>, 1, Headers, {<<"host">>, NewHost}),
   {Headers, State}.
 

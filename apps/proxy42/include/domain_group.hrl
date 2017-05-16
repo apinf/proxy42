@@ -1,0 +1,1 @@
+-record(domain_group, {hostname, frontend_prefix, backend_prefix, servers, strategy, additional_headers, rate_limit}).

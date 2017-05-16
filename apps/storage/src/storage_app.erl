@@ -1,5 +1,10 @@
 -module(storage_app).
+-include_lib("proxy42/include/domain_group.hrl").
 -behaviour(application).
+
+
+%%FIXME: Remove export_all
+-compile([export_all]).
 
 -export([start/2, init/0, stop/1]).
 -export([test/2]).
@@ -17,7 +22,7 @@ start(_StartType, _StartArgs) ->
 
 init() ->
     %% TODO: Take in a list of distributed hosts.
-    Nodes = net_adm:world_list([net_adm:localhost()]),
+    Nodes = net_adm:world_list([]),
     erlang:display(Nodes),
     NodeCount = length(Nodes),
     case NodeCount > 1 of
@@ -38,13 +43,7 @@ init_storage(true) ->
     wait_for_tables().
 
 create_tables() ->
-    mnesia:create_table(domain_groups, [{attributes, [hostname
-                                                     ,frontend_prefix
-                                                     ,backend_prefix
-                                                     ,servers
-                                                     ,strategy
-                                                     ,additional_headers
-                                                     ,rate_limit]}
+    mnesia:create_table(domain_group, [{attributes, record_info(fields, domain_group)}
                                        ,{type, bag}
                                        ,{disc_copies, [node()]}]).
 
@@ -88,3 +87,32 @@ test(K, V) ->
 
 stop(_State) ->
     ok.
+
+store_domain_group(DomainGroup) ->
+    #{
+       hostname := Hostname,
+       frontend_prefix := FrontendPrefix,
+       backend_prefix := BackendPrefix,
+       servers := Servers,
+       strategy := Strategy,
+       additional_headers := AdditionalHeaders,
+       ratelimit := RateLimit
+     } = DomainGroup,
+    Row = #domain_group{
+       hostname = Hostname,
+       frontend_prefix = FrontendPrefix,
+       backend_prefix = BackendPrefix,
+       servers = Servers,
+       strategy = Strategy,
+       additional_headers = AdditionalHeaders,
+       rate_limit = RateLimit
+            },
+    F = fun() ->
+                mnesia:write(Row)
+        end,
+    mnesia:transaction(F).
+
+find_domain_group(Pattern) ->
+    erlang:display(Pattern),
+    [DomainGroup] = mnesia:dirty_match_object(Pattern),
+    DomainGroup.
