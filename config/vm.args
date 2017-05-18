@@ -1,1 +1,2 @@
 -setcookie proxy42_secret
+-start_epmd true

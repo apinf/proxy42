@@ -1,12 +1,13 @@
 {"1.1.0",
-[{<<"cowboyku">>,
+[{<<"cowboy">>,{pkg,<<"cowboy">>,<<"1.0.4">>},0},
+ {<<"cowboyku">>,
   {git,"https://github.com/heroku/cowboyku.git",
        {ref,"60de3bca9909b59305cc69ea39b2c4e2a7e12c06"}},
   1},
  {<<"cowlib">>,
   {git,"https://github.com/ninenines/cowlib.git",
-       {ref,"63298e8e160031a70efff86a1acde7e7db1fcda6"}},
-  1},
+       {ref,"d544a494af4dbc810fc9c15eaf5cc050cced1501"}},
+  0},
  {<<"erequest_id">>,
   {git,"https://github.com/heroku/erequest_id.git",
        {ref,"6fae0c878f2dde809482915c8b207dc80882f7b3"}},
@@ -38,5 +39,6 @@
   0}]}.
 [
 {pkg_hash,[
+ {<<"cowboy">>, <<"A324A8DF9F2316C833A470D918AAF73AE894278B8AA6226CE7A9BF699388F878">>},
  {<<"recon">>, <<"4444C879BE323B1B133EEC5241CB84BD3821EA194C740D75617E106BE4744318">>}]}
 ].
