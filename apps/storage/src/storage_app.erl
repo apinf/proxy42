@@ -90,6 +90,7 @@ stop(_State) ->
 
 store_domain_group(DomainGroup) ->
     #{
+       id := Id,
        hostname := Hostname,
        frontend_prefix := FrontendPrefix,
        backend_prefix := BackendPrefix,
@@ -99,13 +100,14 @@ store_domain_group(DomainGroup) ->
        ratelimit := RateLimit
      } = DomainGroup,
     Row = #domain_group{
-       hostname = Hostname,
-       frontend_prefix = FrontendPrefix,
-       backend_prefix = BackendPrefix,
-       servers = Servers,
-       strategy = Strategy,
-       additional_headers = AdditionalHeaders,
-       rate_limit = RateLimit
+             id = Id,
+             hostname = Hostname,
+             frontend_prefix = FrontendPrefix,
+             backend_prefix = BackendPrefix,
+             servers = Servers,
+             strategy = Strategy,
+             additional_headers = AdditionalHeaders,
+             rate_limit = RateLimit
             },
     F = fun() ->
                 mnesia:write(Row)
@@ -116,3 +118,6 @@ find_domain_group(Pattern) ->
     erlang:display(Pattern),
     [DomainGroup] = mnesia:dirty_match_object(Pattern),
     DomainGroup.
+
+match_all_pattern() ->
+  #domain_group{_ = '_'}.

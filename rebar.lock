@@ -1,5 +1,5 @@
 {"1.1.0",
-[{<<"cowboy">>,{pkg,<<"cowboy">>,<<"1.0.4">>},0},
+[{<<"cowboy">>,{pkg,<<"cowboy">>,<<"1.1.2">>},0},
  {<<"cowboyku">>,
   {git,"https://github.com/heroku/cowboyku.git",
        {ref,"60de3bca9909b59305cc69ea39b2c4e2a7e12c06"}},
@@ -18,12 +18,9 @@
   1},
  {<<"quickrand">>,
   {git,"https://github.com/okeuday/quickrand.git",
-       {ref,"86ccdd7a0b4eeb57b0ee8ee047da7d483401d5bf"}},
+       {ref,"b03969a8de2ee4f4d9821aa04f9ff06666be6501"}},
   2},
- {<<"ranch">>,
-  {git,"https://github.com/ninenines/ranch.git",
-       {ref,"741bfb73ca663394ecf7a73410506d66f01985a6"}},
-  1},
+ {<<"ranch">>,{pkg,<<"ranch">>,<<"1.3.2">>},1},
  {<<"ranch_proxy_protocol">>,
   {git,"https://github.com/heroku/ranch_proxy_protocol.git",
        {ref,"0129227305a5b41f0875b337ac75f02f613f81c1"}},
@@ -35,10 +32,11 @@
   1},
  {<<"vegur">>,
   {git,"https://github.com/heroku/vegur",
-       {ref,"7bea099cfc26150406fc7a79b99b6dd9c5a77642"}},
+       {ref,"a2799234e1ae08beba22234ef0d106c94ddcdfa3"}},
   0}]}.
 [
 {pkg_hash,[
- {<<"cowboy">>, <<"A324A8DF9F2316C833A470D918AAF73AE894278B8AA6226CE7A9BF699388F878">>},
+ {<<"cowboy">>, <<"61AC29EA970389A88ECA5A65601460162D370A70018AFE6F949A29DCA91F3BB0">>},
+ {<<"ranch">>, <<"E4965A144DC9FBE70E5C077C65E73C57165416A901BD02EA899CFD95AA890986">>},
  {<<"recon">>, <<"4444C879BE323B1B133EEC5241CB84BD3821EA194C740D75617E106BE4744318">>}]}
 ].

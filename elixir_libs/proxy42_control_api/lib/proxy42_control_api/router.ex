@@ -2,6 +2,7 @@ defmodule Proxy42.ControlApi.Router do
   use Plug.Router
   import Plug.Conn
 
+  plug Plug.Logger, log: :debug
   plug :match
   plug Plug.Parsers, parsers: [:urlencoded, :json],
     pass:  ["application/x-www-form-urlencoded", "application/json"],
@@ -12,15 +13,10 @@ defmodule Proxy42.ControlApi.Router do
   Documentation for Proxy42ControlApi.
   """
 
-  forward 
-  get "/admin/apis" do
-    json = {}
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, json)
-  end
+  forward "/apis", to: Proxy42.ControlApi.Apis
 
   match _ do
+    IO.inspect conn
     send_resp(conn, 404, "Not Found")
   end
 end
