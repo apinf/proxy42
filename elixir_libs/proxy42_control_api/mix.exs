@@ -36,7 +36,7 @@ defmodule Proxy42ControlApi.Mixfile do
       {:cowboy, "~>1.0.0"},
       {:plug, "~> 1.0"},
       {:poison, "~>3.0"},
-      {:uuid, "~>1.1"},
+      {:uuid, github: "avtobiff/erlang-uuid"}
     ]
   end
 end

@@ -66,7 +66,7 @@ defmodule Proxy42.Store do
   end
 
   def add_api(params) do
-    id = UUID.uuid4()
+    id = :uuid.to_string(:uuid.uuid4())
     new_params = Map.put(params, :id, id)
     :mnesia.transaction(fn ->
       domain_group() # creates empty record
