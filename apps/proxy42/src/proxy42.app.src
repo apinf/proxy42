@@ -7,7 +7,7 @@
    [kernel
    ,stdlib
    ,vegur
-   ,storage
+   ,proxy42_storage
    ]},
   {env,[]},
   {modules, []},

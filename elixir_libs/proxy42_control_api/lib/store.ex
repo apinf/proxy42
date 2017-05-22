@@ -8,7 +8,7 @@ defmodule Proxy42.Store do
     # A pattern is a record with all fields either having constraints or the
     # atom :_. So we create a match all pattern with :_ everywhere and
     # then update it with constraints from user supplied params.
-    match_all = :storage_app.match_all_pattern()
+    match_all = :proxy42_storage_app.match_all_pattern()
     update_domain_group(match_all, params)
   end
 

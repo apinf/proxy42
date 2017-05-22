@@ -1,4 +1,4 @@
--module(storage_app).
+-module(proxy42_storage_app).
 -include_lib("proxy42/include/domain_group.hrl").
 -behaviour(application).
 

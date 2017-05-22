@@ -1,8 +1,8 @@
-{application, storage,
+{application, proxy42_storage,
  [{description, "An OTP application which handles storage"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { storage_app, []}},
+  {mod, { proxy42_storage_app, []}},
   {applications,
    [kernel
    ,stdlib
