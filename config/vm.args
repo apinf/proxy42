@@ -1,3 +1,0 @@
--setcookie proxy42_secret
--start_epmd true
--sname proxy42_dev

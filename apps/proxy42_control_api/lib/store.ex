@@ -40,12 +40,12 @@ defmodule Proxy42.Store do
 
   @domain_group
   |> Keyword.keys
-  |> Enum.each fn key ->
+  |> Enum.each(fn key ->
     def update_domain_group(dg, [{unquote(key), val}| rest]) do
       domain_group(dg, [{unquote(key), val}])
       |> update_domain_group(rest)
     end
-  end
+  end)
 
   def update_domain_group(dg, [_| rest]) do
     update_domain_group(dg, rest)
@@ -54,6 +54,7 @@ defmodule Proxy42.Store do
   def get_apis(params) do
     pattern(params)
     |> :mnesia.dirty_match_object
+    |> IO.inspect
   end
 
   def get_api(id) do
@@ -66,16 +67,50 @@ defmodule Proxy42.Store do
   end
 
   def add_api(params) do
-    id = :uuid.to_string(:uuid.uuid4())
+    IO.inspect(params)
+    id = :uuid.to_string(:uuid.get_v4(), :binary_standard)
     new_params = Map.put(params, :id, id)
-    :mnesia.transaction(fn ->
+    transaction(fn ->
       domain_group() # creates empty record
       |> update_domain_group(new_params)
       |> :mnesia.write
     end)
   end
 
-  def put_api(id, params)
-  def patch_api(id, params)
-  def delete_api(id)
+  def update_api!(id, params) do
+    {:ok, res} = update_api(id, params)
+    res
+  end
+
+  def update_api(id, params) do
+    transaction(fn ->
+      case :mnesia.read(:domain_group, id, :write) do
+        [] -> :mnesia.abort("No api with id #{id}")
+        [dg] ->
+          update_domain_group(dg, params)
+          |> :mnesia.write
+        _ -> :mnesia.abort("EIMPOSSIBLE: Too many apis with id #{id}")
+      end
+    end)
+  end
+
+  def delete_api(id) do
+    transaction(fn ->
+      :mnesia.delete(:domain_group, id)
+    end)
+  end
+
+  def exists?(id) do
+    case get_api(id) do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
+
+  defp transaction(t) do
+    case :mnesia.transaction(t) do
+      {:atomic, res} -> {:ok, res}
+      {:aborted, reason} -> {:error, reason}
+    end
+  end
 end

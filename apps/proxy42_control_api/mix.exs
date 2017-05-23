@@ -4,10 +4,14 @@ defmodule Proxy42ControlApi.Mixfile do
   def project do
     [app: :proxy42_control_api,
      version: "0.1.0",
-     elixir: "~> 1.4",
+     elixir: "~> 1.2",
+     build_path: "../../_build",
+     config_path: "../../config/config.exs",
+     deps_path: "../../deps",
+     lockfile: "../../mix.lock",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     erlc_options: [:debug_info, {:i, "../../apps"}],
+     erlc_options: [:debug_info, {:nowarn_deprecated_function, [{:crypto, :rand_bytes, 1}]}],
      deps: deps()]
   end
 
@@ -36,7 +40,7 @@ defmodule Proxy42ControlApi.Mixfile do
       {:cowboy, "~>1.0.0"},
       {:plug, "~> 1.0"},
       {:poison, "~>3.0"},
-      {:uuid, github: "avtobiff/erlang-uuid"}
+      {:uuid, github: "okeuday/uuid", tag: "v1.5.1.1"},
     ]
   end
 end
