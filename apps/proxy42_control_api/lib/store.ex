@@ -1,6 +1,7 @@
 defmodule Proxy42.Store do
   @domain_group_hrl Path.expand("../../apps/proxy42/include/domain_group.hrl")
   @domain_group Record.extract(:domain_group, from: @domain_group_hrl)
+  @domain_group_fields @domain_group |> Keyword.keys
   require Record
   Record.defrecord :domain_group, @domain_group
 
@@ -38,8 +39,7 @@ defmodule Proxy42.Store do
     dg
   end
 
-  @domain_group
-  |> Keyword.keys
+  @domain_group_fields
   |> Enum.each(fn key ->
     def update_domain_group(dg, [{unquote(key), val}| rest]) do
       domain_group(dg, [{unquote(key), val}])
@@ -66,15 +66,24 @@ defmodule Proxy42.Store do
     end
   end
 
+  def add_api!(params) do
+    {:ok, res} = add_api(params)
+    res
+  end
+
   def add_api(params) do
     IO.inspect(params)
-    id = :uuid.to_string(:uuid.get_v4(), :binary_standard)
+    id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
     new_params = Map.put(params, :id, id)
     transaction(fn ->
       domain_group() # creates empty record
       |> update_domain_group(new_params)
       |> :mnesia.write
     end)
+    |> case do
+      {:ok, :ok} -> {:ok, id}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def update_api!(id, params) do
@@ -96,7 +105,7 @@ defmodule Proxy42.Store do
 
   def delete_api(id) do
     transaction(fn ->
-      :mnesia.delete(:domain_group, id)
+      :mnesia.delete(:domain_group, id, :write)
     end)
   end
 
@@ -112,5 +121,9 @@ defmodule Proxy42.Store do
       {:atomic, res} -> {:ok, res}
       {:aborted, reason} -> {:error, reason}
     end
+  end
+
+  def get_all_domain_group_fields() do
+    @domain_group_fields
   end
 end

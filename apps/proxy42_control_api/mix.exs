@@ -21,7 +21,7 @@ defmodule Proxy42ControlApi.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :proxy42],
       mod: {Proxy42.ControlApi.Application, []}
     ]
   end
@@ -41,6 +41,7 @@ defmodule Proxy42ControlApi.Mixfile do
       {:plug, "~> 1.0"},
       {:poison, "~>3.0"},
       {:uuid, github: "okeuday/uuid", tag: "v1.5.1.1"},
+      {:proxy42, in_umbrella: true}
     ]
   end
 end
