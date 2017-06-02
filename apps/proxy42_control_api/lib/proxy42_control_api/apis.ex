@@ -21,11 +21,8 @@ defmodule Proxy42.ControlApi.Apis do
   end
 
   post "/" do
-    IEx.pry
-   Store.add_api!(conn.body_params)
-   |> (fn x -> send_resp(conn,
-                         201,
-                         "{\"id\": \"#{x}\"}") end).()
+   id = Store.add_api!(conn.body_params)
+   send_resp(conn, 201, ~s({"id": "#{id}"}))
   end
 
   get "/:id" do
