@@ -93,7 +93,6 @@ defmodule Proxy42.ControlApi.Apis do
              :additional_headers => additional_headers
            },
         do: {:ok, transformed_params}
-    IEx.pry
     case with_no_pipe_stupidity do
       true ->  # some idiot supplied an id
         send_resp(conn, 400, ~s({"error": "id should not be present"})) |> halt
