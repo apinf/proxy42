@@ -108,6 +108,15 @@ defmodule Proxy42.ControlApi.Apis do
 
   def validate_and_transform(conn, _opts), do: conn
 
+  defp validate_and_transform({key, p})
+  when key in [:frontend_prefix, :backend_prefix] do
+    if String.starts_with?(p, "/") and String.ends_with?(p, "/") do
+      {:ok, p}
+    else
+      {:error, "#{key} must begin and end with a /"}
+    end
+  end
+
   defp validate_and_transform({key, nil}) do
     {:error, "#{key} missing"}
   end
