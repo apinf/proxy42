@@ -6,6 +6,7 @@ defmodule Proxy42.ControlApi.Apis do
   require IEx
 
   alias Proxy42.Store
+  alias Proxy42.DomainGroup, as: DG
 
   plug :match
   plug Plug.Parsers, parsers: [:urlencoded, :json],
@@ -17,7 +18,9 @@ defmodule Proxy42.ControlApi.Apis do
   get "/" do
     conn = fetch_query_params(conn)
     Store.get_apis(conn.query_params)
-    |> send_json(conn)
+    |> Enum.map(&DG.record_to_struct/1)
+    |> Poison.encode!
+    |> (&send_resp(conn, 200, &1)).()
   end
 
   post "/" do
@@ -27,8 +30,10 @@ defmodule Proxy42.ControlApi.Apis do
 
   get "/:id" do
     case Store.get_api(id) do
-      {:ok, api} -> api |> send_json(conn)
-      {:error, :notfound} -> conn |> send_resp(404, "")
+      {:ok, api} ->
+        api |> DG.record_to_struct |> Poison.encode! |> (&send_resp(conn, 200, &1)).()
+      {:error, :notfound} ->
+        conn |> send_resp(404, "")
     end
   end
 
@@ -55,11 +60,6 @@ defmodule Proxy42.ControlApi.Apis do
     send_resp(conn, 204, "")
   end
 
-  def send_json(content, conn, status \\ 200) do
-    json = Poison.Encoder.encode(content, [])
-    send_resp(conn, status, json)
-  end
-
   match _ do
     send_resp(conn, 404, "")
   end
@@ -67,12 +67,7 @@ defmodule Proxy42.ControlApi.Apis do
   # TODO: whitelist reasons to pass on, send something went wrong and 500 for others.
   # I know, sorry.
   def handle_errors(conn, %{kind: _kind, reason: reason, stack: stack}) do
-    send_resp(conn, conn.status, ~s({"error": "#{inspect(reason)}"}))
-  end
-
-  def validate_api(params) do
-    required_params = Store.get_all_domain_group_fields() -- ["id"]
-    Enum.all?(required_params, fn x -> Map.has_key?(params, x) end)
+    send_resp(conn, conn.status, ~s[{"error": "#{inspect(reason)}"])
   end
 
   def validate_and_transform(conn = %Plug.Conn{method: "POST"}, _opts) do
@@ -116,6 +111,22 @@ defmodule Proxy42.ControlApi.Apis do
     end
   end
 
+  defp validate_and_transform({:servers, servers}) do
+    Enum.reduce(servers, {:ok, []},
+      fn
+        (server, {:ok, validated_servers}) ->
+          with {protocol, host, port} <- parse_server(server),
+               {:ok, _hostentry} <- :inet.gethostbyname(host),
+               do: {:ok, [{protocol, host, port} | validated_servers]}
+        (server, {:error, e}) when is_binary(e) -> {:error, e}
+        (server, {:error, _}) -> {:error, "invalid server: #{server}"}
+      end
+    )
+  end
+
+  defp validate_and_transform({:strategy, "random"}), do: {:ok, :random}
+  defp validate_and_transform({:strategy, _}), do: {:error, "Invalid strategy"}
+
   defp validate_and_transform({key, nil}) do
     {:error, "#{key} missing"}
   end
@@ -123,4 +134,15 @@ defmodule Proxy42.ControlApi.Apis do
   defp validate_and_transform({_, val}) do
     {:ok, val}
   end
+
+  defp parse_server(server = <<"http://", _::binary>>), do: server |> String.to_charlist |> parse_server!
+  defp parse_server(server = <<"https://", _::binary>>), do: server |> String.to_charlist |> parse_server!
+  defp parse_server(server), do: {:error, "server #{server} has missing or invalid scheme"}
+  defp parse_server!(server) when is_list(server) do
+    with {:ok, {proto, _creds, host, port, _path, _qs}} <- :http_uri.parse(server),
+    do: {proto, host, port}
+  end
+
+  # Hoping this record doesn't change shape.
+  defp parse_hostentry(hostentry), do: elem(hostentry, 1)
 end
