@@ -56,7 +56,7 @@ defmodule Proxy42.ControlApi.Apis do
   end
 
   def send_json(content, conn, status \\ 200) do
-    json = "" #Poison.Encoder.encode(content, [])
+    json = Poison.Encoder.encode(content, [])
     send_resp(conn, status, json)
   end
 
