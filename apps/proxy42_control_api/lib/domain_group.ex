@@ -94,10 +94,31 @@ defmodule Proxy42.DomainGroup do
                        }] })
   end
 
-  # defimpl Poison.Encoder, for: __MODULE__ do
-  #   def encode(%{key: val, ...}) do
-  #     iolist
-  #   end
-  # end
 
+end
+
+defimpl Poison.Encoder, for: Proxy42.DomainGroup do
+  @domain_group_fields Proxy42.DomainGroup.get_all_domain_group_fields
+  @mod Proxy42.DomainGroup
+
+  def encode(unquote({ :%, [], [@mod,
+                                { :%{}, [],
+                                  for key <- @domain_group_fields do
+                                    { key, { key, [], nil } }
+                                  end
+                                }] }), options \\ []) do
+    # Macro magic allows any key of DG to be used as a variable
+    # directly. Accessing it will give actual value and updating it
+    # will modify json representation
+    servers = for {proto, host, port} <- servers do
+      "#{proto}://#{host}:#{port}"
+    end
+
+    updated_struct_as_map = unquote({ :%{}, [],
+                               for key <- @domain_group_fields do
+                                 { key, { key, [], nil } }
+                               end
+                             })
+    Poison.encode_to_iodata!(updated_struct_as_map, options)
+  end
 end

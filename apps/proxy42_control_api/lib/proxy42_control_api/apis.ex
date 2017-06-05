@@ -46,15 +46,6 @@ defmodule Proxy42.ControlApi.Apis do
     end
   end
 
-  put "/:id" do
-    if Store.exists?(id) do
-      Store.update_api(id, conn.body_params)
-      send_resp(conn, 204, "")
-    else
-      send_resp(conn, 404, "")
-    end
-  end
-
   delete "/:id" do
     Store.delete_api(id)
     send_resp(conn, 204, "")
@@ -80,12 +71,14 @@ defmodule Proxy42.ControlApi.Apis do
            {:ok, backend_prefix} <- validate_and_transform({:backend_prefix, params["backend_prefix"]}),
            {:ok, strategy} <- validate_and_transform({:strategy, params["strategy"]}),
            {:ok, additional_headers} <- validate_and_transform({:additional_headers, params["additional_headers"]}),
+           {:ok, rate_limit} <- validate_and_transform({:rate_limit, params["rate_limit"]}),
            transformed_params = %{:hostname => hostname,
              :servers => servers,
              :frontend_prefix => frontend_prefix,
              :backend_prefix => backend_prefix,
              :strategy => strategy,
-             :additional_headers => additional_headers
+             :additional_headers => additional_headers,
+             :rate_limit => rate_limit
            },
         do: {:ok, transformed_params}
     case with_no_pipe_stupidity do
@@ -99,9 +92,13 @@ defmodule Proxy42.ControlApi.Apis do
         send_resp(conn, 400, ~s({"error": "Malformed input"})) |> halt
     end
   end
-
+  # TODO: Validate and transform PATCH requests
+  # TODO: Move validation into its own module
   def validate_and_transform(conn, _opts), do: conn
 
+  defp validate_and_transform({key, nil}) do
+    {:error, "#{key} missing"}
+  end
   defp validate_and_transform({key, p})
   when key in [:frontend_prefix, :backend_prefix] do
     if String.starts_with?(p, "/") and String.ends_with?(p, "/") do
@@ -119,7 +116,7 @@ defmodule Proxy42.ControlApi.Apis do
                {:ok, _hostentry} <- :inet.gethostbyname(host),
                do: {:ok, [{protocol, host, port} | validated_servers]}
         (server, {:error, e}) when is_binary(e) -> {:error, e}
-        (server, {:error, _}) -> {:error, "invalid server: #{server}"}
+        (server, {:error, _}) -> {:error, "Invalid server: #{server}"}
       end
     )
   end
@@ -127,8 +124,11 @@ defmodule Proxy42.ControlApi.Apis do
   defp validate_and_transform({:strategy, "random"}), do: {:ok, :random}
   defp validate_and_transform({:strategy, _}), do: {:error, "Invalid strategy"}
 
-  defp validate_and_transform({key, nil}) do
-    {:error, "#{key} missing"}
+  defp validate_and_transform({:rate_limit, r}) do
+    case :erlang.is_number(r) do
+      true -> {:ok, r}
+      false -> {:error, "Invalid rate limit"}
+    end
   end
   # XXX: Terrible idea but I'm lazy for now.
   defp validate_and_transform({_, val}) do
