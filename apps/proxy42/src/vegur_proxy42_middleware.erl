@@ -253,7 +253,7 @@ add_forwarded(Headers, Req) ->
     {Headers4, Req3}.
 
 add_via(Headers, Req) ->
-    Via = vegur_utils:get_via_value(),
+    Via = <<"Proxy42 0.1">>,
     vegur_utils:add_or_append_header(<<"via">>, Via, Headers, Req).
 
 handle_feature(Req, {Headers, PeerPort}) ->

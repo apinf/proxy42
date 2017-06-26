@@ -7,6 +7,9 @@
          checkout_service/3,
          checkin_service/6,
          service_backend/3,
+         auth_config/2,
+         auth/3,
+         rate_limit/3,
          backend_request_params/3,
          transform_response_headers/2,
          feature/2,
@@ -77,6 +80,23 @@ backend_request_params(Body, Upstream, State) ->
   erlang:display(Params),
   {Params, Req7, State}.
 
+auth_config(Req, State) ->
+  Config = [
+   {header, <<"proxy-authorization">>, strip}
+  ,{header, <<"authorization">>, strip}
+  ],
+  {Config, Req, State}.
+
+auth(AuthInfo, Req, State) ->
+  % {allow, Req, State}.
+  % {deny, Req, State}.
+  {{rate_limit, "whoever"}, Req, State}.
+
+rate_limit(User, Req, State) ->
+  % {allow, State}.
+  % {deny, State}.
+  % {{deny, 120}, State}.
+  {{allow, 100, 99, 120}, State}.
 
 transform_response_headers(Headers, State = #{domain_group := DG}) ->
   #domain_group{hostname = NewHost} = DG,
