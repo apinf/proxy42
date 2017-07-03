@@ -24,7 +24,10 @@ defmodule Proxy42.Store do
   def add_api(params) do
     IO.inspect(params)
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
+    # TODO Get config from user.
+    default_auth_config = {:header, <<"authorization">>, :strip}
     new_params = Map.put(params, :id, id)
+    |> Map.put(:auth_config, default_auth_config)
     transaction(fn ->
       domain_group() # creates empty record
       |> update_domain_group(new_params)

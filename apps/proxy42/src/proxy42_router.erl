@@ -81,10 +81,8 @@ backend_request_params(Body, Upstream, State) ->
   {Params, Req7, State}.
 
 auth_config(Req, State) ->
-  Config = [
-   {header, <<"proxy-authorization">>, strip}
-  ,{header, <<"authorization">>, strip}
-  ],
+  DomainGroup = maps:get(domain_group, State),
+  Config = DomainGroup#domain_group.auth_config,
   {Config, Req, State}.
 
 auth(AuthInfo, Req, State) ->

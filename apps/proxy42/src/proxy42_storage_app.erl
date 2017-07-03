@@ -107,7 +107,8 @@ store_domain_group(DomainGroup) ->
              servers = Servers,
              strategy = Strategy,
              additional_headers = AdditionalHeaders,
-             rate_limit = RateLimit
+             rate_limit = RateLimit,
+             auth_config = default_auth_config
             },
     F = fun() ->
                 mnesia:write(Row)
@@ -121,3 +122,6 @@ find_domain_group(Pattern) ->
 
 match_all_pattern() ->
   #domain_group{_ = '_'}.
+
+default_auth_config() ->
+    {header, <<"proxy-authorization">>, strip}.

@@ -6,4 +6,5 @@
           servers,
           strategy,
           additional_headers,
-          rate_limit}).
+          rate_limit,
+          auth_config}).
