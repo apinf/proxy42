@@ -13,13 +13,17 @@ execute(Req, Env) ->
   % Mode can be keep or strip, and will decide if the header or query param
   % will be consumed by us or retained in the request.
   {AuthConfig, Req4, HandlerState1} = InterfaceModule:auth_config(Req3, HandlerState),
-  AuthInfo = lists:filtermap(fun (X)-> extract(X, Req4) end, AuthConfig),
-  {AuthResult, Req5, HandlerState2} = InterfaceModule:auth(AuthInfo, Req4, HandlerState1),
-  Req6 = vegur_utils:set_handler_state(HandlerState2, Req5),
+  {AuthResult, Req6, HandlerState3} = case AuthConfig of 
+                   {authorization_needed, _,_,_} -> AuthInfo = extract(AuthConfig, Req4),
+                                                    {AuthResult1, Req5, HandlerState2} = InterfaceModule:auth(AuthInfo, Req4, HandlerState1),
+                                                    {AuthResult1, Req5, HandlerState2};
+                   {_,_,_,_} -> {allow, Req4, HandlerState1}
+               end,
+  Req7 = vegur_utils:set_handler_state(HandlerState3, Req6),
   case AuthResult of
-    allow -> {ok, Req6, Env};
-    {rate_limit, User} -> handle_rate_limit(User, Req6, Env);
-    deny -> {halt, 403, Req6}
+    allow -> {ok, Req7, Env};
+    {rate_limit, User} -> handle_rate_limit(User, Req7, Env);
+    deny -> {error, 403, Req7}
   end.
 
 
@@ -39,19 +43,19 @@ handle_rate_limit(User, Req, Env) ->
       Req5 = cowboyku_req:set_resp_header(<<"RateLimit-Reset">>, Rst, Req4),
       {ok, Req5, Env};
     deny ->
-      {halt, 429, Req2};
+      {error, 429, Req2};
     {deny, RetryAfter} ->
       RA = str(RetryAfter),
       Req3 = cowboyku_req:set_resp_header(<<"Retry-After">>, RA, Req2),
-      {halt, 429, Req3}
+      {error, 429, Req3}
   end.
 
-extract({header, Header, Mode}, Req) ->
+extract({authorization_needed, header, Header, Mode}, Req) ->
   case cowboyku_req:header(Header, Req) of
     {undefined, Req} -> false;
     {Val, Req} -> {true, parse_auth_header(Val)}
   end;
-extract({qs, Param, Mode}, Req) ->
+extract({authorization_needed, qs, Param, Mode}, Req) ->
   %% TODO
   case cowboyku_req:qs_val(Param, Req) of
     undefined -> false;

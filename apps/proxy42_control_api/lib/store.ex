@@ -22,10 +22,9 @@ defmodule Proxy42.Store do
   end
 
   def add_api(params) do
-    IO.inspect(params)
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
     # TODO Get config from user.
-    default_auth_config = {:header, <<"authorization">>, :strip}
+    default_auth_config = {:authorization_needed, :header, <<"authorization">>, :strip}
     new_params = Map.put(params, :id, id)
     |> Map.put(:auth_config, default_auth_config)
     transaction(fn ->
@@ -67,6 +66,23 @@ defmodule Proxy42.Store do
       {:ok, _} -> true
       _ -> false
     end
+  end
+
+  # TODO: Rethink this
+  def get_developers(_params) do
+    :mnesia.dirty_match_object({:developer, :_,:_,:_})
+    |> Enum.map(fn(x) -> %{"id": :erlang.element(2, x)} end)
+  end
+
+  # TODO: Rethink format of id and key. Both are uuid v4 for now.
+  def add_developer!(_params) do
+    id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
+    key = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
+    {:atomic, :ok} = :mnesia.transaction( fn ->
+      {:developer, id, key, {:nopassword}}
+      |> :mnesia.write
+    end)
+    {id, key}
   end
 
   defp transaction(t) do

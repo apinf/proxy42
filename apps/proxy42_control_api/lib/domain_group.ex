@@ -114,6 +114,10 @@ defimpl Poison.Encoder, for: Proxy42.DomainGroup do
       "#{proto}://#{host}:#{port}"
     end
 
+    {authorization?, type, key, mode} = auth_config
+    # TODO: Get a better representation
+    auth_config = "#{type}:#{key} Mode:#{mode}"
+
     updated_struct_as_map = unquote({ :%{}, [],
                                for key <- @domain_group_fields do
                                  { key, { key, [], nil } }

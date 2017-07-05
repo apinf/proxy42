@@ -15,6 +15,7 @@ defmodule Proxy42.ControlApi.Apis do
   plug :validate_and_transform
   plug :dispatch
 
+  # TODO: Encode or strip auth_config?
   get "/" do
     conn = fetch_query_params(conn)
     Store.get_apis(conn.query_params)
@@ -72,13 +73,15 @@ defmodule Proxy42.ControlApi.Apis do
            {:ok, strategy} <- validate_and_transform({:strategy, params["strategy"]}),
            {:ok, additional_headers} <- validate_and_transform({:additional_headers, params["additional_headers"]}),
            {:ok, rate_limit} <- validate_and_transform({:rate_limit, params["rate_limit"]}),
+           {:ok, developers} <- validate_and_transform({:developers, params["developers"]}),
            transformed_params = %{:hostname => hostname,
              :servers => servers,
              :frontend_prefix => frontend_prefix,
              :backend_prefix => backend_prefix,
              :strategy => strategy,
              :additional_headers => additional_headers,
-             :rate_limit => rate_limit
+             :rate_limit => rate_limit,
+             :developers => developers
            },
         do: {:ok, transformed_params}
     case with_no_pipe_stupidity do
@@ -129,6 +132,19 @@ defmodule Proxy42.ControlApi.Apis do
       true -> {:ok, r}
       false -> {:error, "Invalid rate limit"}
     end
+  end
+
+  defp validate_and_transform({:developers, developers}) do
+    # TODO: Check for existence of uuid in db.
+    # TODO: Rescue badarg in string_to_uuid
+    checks = with true <- :erlang.is_list(developers),
+                  true <- Enum.all?(developers, fn x ->
+                    :uuid.is_uuid(:uuid.string_to_uuid(x)) end),
+               do: {:ok, developers}
+     case checks do
+       {:ok, developers} -> {:ok, developers}
+       false -> {:error, "Invalid list of developers"}
+     end
   end
   # XXX: Terrible idea but I'm lazy for now.
   defp validate_and_transform({_, val}) do
