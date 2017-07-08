@@ -11,6 +11,7 @@ defmodule Proxy42.ControlApi.Router do
   """
 
   forward "/apis", to: Proxy42.ControlApi.Apis
+  forward "/developers", to: Proxy42.ControlApi.Developers
 
   match _ do
     send_resp(conn, 404, "Not Found")
