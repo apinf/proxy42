@@ -1,5 +1,6 @@
 -module(proxy42_storage_app).
 -include("domain_group.hrl").
+-include("developers.hrl").
 -behaviour(application).
 
 
@@ -7,14 +8,11 @@
 -compile([export_all]).
 
 -export([start/2, init/0, stop/1]).
--export([test/2]).
 
 %% announce
 -record(storage_announce, {sender, node}).
 %% ack announce
 -record(storage_ack_announce, {sender, node}).
-%% test_row
--record(test, {key, value}).
 
 start(_StartType, _StartArgs) ->
     register(?MODULE, Pid=spawn_link(?MODULE, init, [])),
@@ -45,10 +43,13 @@ init_storage(true) ->
 create_tables() ->
     mnesia:create_table(domain_group, [{attributes, record_info(fields, domain_group)}
                                        ,{type, bag}
-                                       ,{disc_copies, [node()]}]).
+                                      ,{disc_copies, [node()]}]),
+    mnesia:create_table(developer, [{attributes, record_info(fields, developer)}
+                                  ,{type, bag}
+                                  ,{disc_copies, [node()]}]).
 
 wait_for_tables() ->
-    mnesia:wait_for_tables([domain_groups], 10000).
+    mnesia:wait_for_tables([domain_group, developer], 10000).
 
 announce_storage_to_nodes([Node|T]) when Node =:= node() ->
     announce_storage_to_nodes(T);
@@ -76,52 +77,13 @@ copy_storage_to_node(Node) ->
     copy_tables(Node).
 
 copy_tables(Node) ->
-    _R1 = mnesia:add_table_copy(test, Node, disc_copies).
-
-test(K, V) ->
-    Row = #test{key=K, value=V},
-    F = fun() ->
-                mnesia:write(Row)
-        end,
-    mnesia:transaction(F).
+    _R1 = mnesia:add_table_copy(domain_group, Node, disc_copies),
+    _R1 = mnesia:add_table_copy(developer, Node, disc_copies).
 
 stop(_State) ->
     ok.
-
-store_domain_group(DomainGroup) ->
-    #{
-       id := Id,
-       hostname := Hostname,
-       frontend_prefix := FrontendPrefix,
-       backend_prefix := BackendPrefix,
-       servers := Servers,
-       strategy := Strategy,
-       additional_headers := AdditionalHeaders,
-       ratelimit := RateLimit
-     } = DomainGroup,
-    Row = #domain_group{
-             id = Id,
-             hostname = Hostname,
-             frontend_prefix = FrontendPrefix,
-             backend_prefix = BackendPrefix,
-             servers = Servers,
-             strategy = Strategy,
-             additional_headers = AdditionalHeaders,
-             rate_limit = RateLimit,
-             auth_config = default_auth_config
-            },
-    F = fun() ->
-                mnesia:write(Row)
-        end,
-    mnesia:transaction(F).
 
 find_domain_group(Pattern) ->
     erlang:display(Pattern),
     [DomainGroup] = mnesia:dirty_match_object(Pattern),
     DomainGroup.
-
-match_all_pattern() ->
-  #domain_group{_ = '_'}.
-
-default_auth_config() ->
-    {header, <<"proxy-authorization">>, strip}.
