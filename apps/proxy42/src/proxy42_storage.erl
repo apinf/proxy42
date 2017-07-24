@@ -1,8 +1,6 @@
--module(proxy42_storage_app).
+-module(proxy42_storage).
 -include("domain_group.hrl").
 -include("developers.hrl").
--behaviour(application).
-
 
 %%FIXME: Remove export_all
 -compile([export_all]).
@@ -15,6 +13,9 @@
 -record(storage_ack_announce, {sender, node}).
 
 start(_StartType, _StartArgs) ->
+    start().
+
+start() ->
     register(?MODULE, Pid=spawn_link(?MODULE, init, [])),
     {ok, Pid}.
 

@@ -22,13 +22,25 @@ defmodule Proxy42.App.Mixfile do
     ]
   end
 
+  defp env() do
+    [
+      {:port, 8080},
+    ]
+  end
+
   def application do
     [
+      mod: {:proxy42_app, []},
+      env: env(),
       applications: [
         :kernel,
         :stdlib,
         :vegur,
       ],
+      registered: [
+        :proxy42_sup,
+        :proxy42_endpoint,
+      ]
     ]
   end
 end

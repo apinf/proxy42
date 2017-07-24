@@ -26,10 +26,16 @@ start_link() ->
 %% Supervisor callbacks
 %%====================================================================
 
-%% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    {ok, { {one_for_all, 0, 1}, []} }.
-
+  Config = #{ strategy => one_for_all },
+  Endpoint = #{ id => proxy42_endpoint,
+                start => {proxy42_endpoint, start_link, [proxy42:config(port)]}
+              },
+  Storage = #{ id => proxy42_storage,
+               start => {proxy42_storage, start, []}
+             },
+  Children = [Storage, Endpoint],
+  {ok, {Config, Children}}.
 %%====================================================================
 %% Internal functions
 %%====================================================================
