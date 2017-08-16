@@ -1,4 +1,4 @@
-defmodule Proxy42ControlApi.Mixfile do
+defmodule Proxy42.ControlApi.Mixfile do
   use Mix.Project
 
   def project do
@@ -11,7 +11,6 @@ defmodule Proxy42ControlApi.Mixfile do
      lockfile: "../../mix.lock",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     erlc_options: [:debug_info, {:nowarn_deprecated_function, [{:crypto, :rand_bytes, 1}]}],
      deps: deps()]
   end
 
@@ -21,7 +20,7 @@ defmodule Proxy42ControlApi.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [
-      extra_applications: [:logger, :proxy42],
+      extra_applications: [:logger],
       mod: {Proxy42.ControlApi.Application, []}
     ]
   end

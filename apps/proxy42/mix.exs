@@ -1,4 +1,4 @@
-defmodule Proxy42.App.Mixfile do
+defmodule Proxy42.Core.Mixfile do
   use Mix.Project
 
   def project do
