@@ -53,7 +53,7 @@ handle_rate_limit(User, Req, Env) ->
 extract({authorization_needed, header, Header, Mode}, Req) ->
   case cowboyku_req:header(Header, Req) of
     {undefined, Req} -> false;
-    {Val, Req} -> {true, parse_auth_header(Val)}
+    {Val, Req} -> {true, Val}
   end;
 extract({authorization_needed, qs, Param, Mode}, Req) ->
   %% TODO
@@ -61,20 +61,6 @@ extract({authorization_needed, qs, Param, Mode}, Req) ->
     undefined -> false;
     Val -> {true, Val}
   end.
-
-parse_auth_header(<<"Bearer ", R/bits>>) when R =/= <<>> ->
-    % TODO: validate R.
-    erlang:display(R),
-    {bearer, R};
-parse_auth_header(<<"Basic ", R/bits>>) ->
-    parse_basic(base64:decode(R), <<>>).
-
-parse_basic(<< $:, Password/bits >>, UserID) ->
- erlang:display(<<UserID/binary, " ", Password/binary>>),
- {basic, UserID, Password};
-parse_basic(<< C, R/bits >>, UserID) ->
- parse_basic(R, << UserID/binary, C >>).
-
 
 str(X) when is_integer(X) -> erlang:integer_to_binary(X);
 str(X) when is_binary(X) -> X;

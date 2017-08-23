@@ -91,24 +91,13 @@ auth(AuthInfo, Req, State) ->
   % {{rate_limit, "whoever"}, Req, State}.
   % TODO: Get auth, ratelimit results based on IPorDomain
   DomainGroup = maps:get(domain_group, State),
+  % FIXME TODAY: developers does not belong here
   Developers = DomainGroup#domain_group.developers,
   erlang:display(AuthInfo),
-  case AuthInfo of
-      {true, {bearer, Token}} -> {auth_key(Token, Developers), Req, State};
-      _ -> {deny, Req, State}
-  end.
+  % TODO: Get authmodule dynamically
+  Response = auth_key:auth(AuthInfo, Developers),
+  {Response, Req, State}.
   % TODO: Merge auth, ratelimit results goes here
-
-%TODO: Move to separate module
-auth_key(Key, Developers) ->
-  % TODO: Have reverse lookup table
-  case mnesia:dirty_match_object({developer, '_', Key, '_'}) of
-      [] -> deny;
-      [{_, Id, _, _} | _] -> case lists:member(Id, Developers) of
-                                 false -> deny;
-                                 true -> allow
-                             end
-  end.
 
 rate_limit(User, Req, State) ->
   % {allow, State}.
