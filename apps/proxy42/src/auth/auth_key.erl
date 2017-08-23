@@ -15,20 +15,22 @@ parse_basic(<< C, R/binary >>, UserID) ->
     parse_basic(R, << UserID/binary, C >>).
 
 
-auth(AuthInfo, Developers) ->
+auth(AuthInfo, API) ->
     % TODO: Have reverse lookup table
     case AuthInfo of
         {true, Header} ->
             {bearer, Key} = parse_auth_header(Header),
-            check_key(Key, Developers);
+            Developer = identify_key(Key),
+            case proxy42_authorisation:is_authorised(Developer, API) of
+                true -> allow;
+                _ -> deny
+            end;
         _ -> deny
     end.
 
-check_key(Key, Developers) ->
+identify_key(Key) ->
     case mnesia:dirty_match_object({developer, '_', Key, '_'}) of
         [] -> deny;
-        [{_, Id, _, _} | _] -> case lists:member(Id, Developers) of
-                                   false -> deny;
-                                   true -> allow
-                               end
+        [{_, Id, _, _}] -> Id
     end.
+

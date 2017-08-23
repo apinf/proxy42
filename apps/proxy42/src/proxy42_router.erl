@@ -91,13 +91,16 @@ auth(AuthInfo, Req, State) ->
   % {{rate_limit, "whoever"}, Req, State}.
   % TODO: Get auth, ratelimit results based on IPorDomain
   DomainGroup = maps:get(domain_group, State),
+  APIId = extract_id(DomainGroup),
   % FIXME TODAY: developers does not belong here
-  Developers = DomainGroup#domain_group.developers,
   erlang:display(AuthInfo),
   % TODO: Get authmodule dynamically
-  Response = auth_key:auth(AuthInfo, Developers),
+  Response = auth_key:auth(AuthInfo, APIId),
   {Response, Req, State}.
   % TODO: Merge auth, ratelimit results goes here
+
+extract_id(DomainGroup) ->
+    DomainGroup#domain_group.id.
 
 rate_limit(User, Req, State) ->
   % {allow, State}.
