@@ -13,10 +13,11 @@ execute(Req, Env) ->
   % Mode can be keep or strip, and will decide if the header or query param
   % will be consumed by us or retained in the request.
   {AuthConfig, Req4, HandlerState1} = InterfaceModule:auth_config(Req3, HandlerState),
-  {AuthResult, Req6, HandlerState3} = case AuthConfig of 
-                   {authorization_needed, _,_,_} -> AuthInfo = extract(AuthConfig, Req4),
-                                                    {AuthResult1, Req5, HandlerState2} = InterfaceModule:auth(AuthInfo, Req4, HandlerState1),
-                                                    {AuthResult1, Req5, HandlerState2};
+  {AuthResult, Req6, HandlerState3} =
+        case AuthConfig of
+            {authorization_needed, _,_,_} ->
+                AuthInfo = extract(AuthConfig, Req4),
+                InterfaceModule:auth(AuthInfo, Req4, HandlerState1);
                    {_,_,_,_} -> {allow, Req4, HandlerState1}
                end,
   Req7 = vegur_utils:set_handler_state(HandlerState3, Req6),
