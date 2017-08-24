@@ -3,7 +3,6 @@ defmodule Proxy42.ControlApi.Apis do
   use Plug.ErrorHandler
   import Plug.Conn
   require Logger
-  require IEx
 
   alias Proxy42.Store
   alias Proxy42.DomainGroup, as: DG

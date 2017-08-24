@@ -1,14 +1,15 @@
 defmodule Proxy42.Store do
-  import Proxy42.DomainGroup
+  require Proxy42.DomainGroup
+  alias Proxy42.DomainGroup, as: DG
 
   def get_apis(params) do
-    pattern(params)
+    DG.pattern(params)
     |> :mnesia.dirty_match_object
     |> IO.inspect
   end
 
   def get_api(id) do
-    pattern(id: id)
+    DG.pattern(id: id)
     |> :mnesia.dirty_match_object
     |> case do
       [] -> {:error, :notfound}
@@ -28,8 +29,8 @@ defmodule Proxy42.Store do
     new_params = Map.put(params, :id, id)
     |> Map.put(:auth_config, default_auth_config)
     transaction(fn ->
-      domain_group() # creates empty record
-      |> update_domain_group(new_params)
+      DG.domain_group() # creates empty record
+      |> DG.update_domain_group(new_params)
       |> :mnesia.write
     end)
     |> case do
@@ -48,7 +49,7 @@ defmodule Proxy42.Store do
       case :mnesia.read(:domain_group, id, :write) do
         [] -> :mnesia.abort("No api with id #{id}")
         [dg] ->
-          update_domain_group(dg, params)
+          DG.update_domain_group(dg, params)
           |> :mnesia.write
         _ -> :mnesia.abort("EIMPOSSIBLE: Too many apis with id #{id}")
       end
@@ -61,10 +62,26 @@ defmodule Proxy42.Store do
     end)
   end
 
+  # TODO: Cleanup exists/1
   def exists?(id) do
     case get_api(id) do
       {:ok, _} -> true
       _ -> false
+    end
+  end
+
+  def exists?(:developer, developer) do
+    # FIXME: Don't write patterns directly
+    case :mnesia.dirty_match_object({:developer, developer, :_, :_}) do
+      [_] -> true
+      [] -> false
+    end
+  end
+
+  def exists?(:api, api) do
+    case :mnesia.dirty_match_object(DG.pattern(%{:id => api})) do
+      [_] -> true
+      [] -> false
     end
   end
 
@@ -83,6 +100,18 @@ defmodule Proxy42.Store do
       |> :mnesia.write
     end)
     {id, key}
+  end
+
+  def add_authorization(params) do
+    developer = params["developer_id"]
+    api = params["api_id"]
+    case :mnesia.transaction(fn ->
+        :mnesia.write({:authorization, developer, api})
+        end
+        ) do
+      {:atomic, _} -> :ok
+      {:aborted, reason} -> {:error, reason}
+    end
   end
 
   defp transaction(t) do
