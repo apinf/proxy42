@@ -1,6 +1,7 @@
 -module(proxy42_storage).
 -include("domain_group.hrl").
 -include("developers.hrl").
+-include("authorization.hrl").
 
 %%FIXME: Remove export_all
 -compile([export_all]).
@@ -47,10 +48,13 @@ create_tables() ->
                                       ,{disc_copies, [node()]}]),
     mnesia:create_table(developer, [{attributes, record_info(fields, developer)}
                                   ,{type, bag}
-                                  ,{disc_copies, [node()]}]).
+                                   ,{disc_copies, [node()]}]),
+    mnesia:create_table(authorization, [{attributes, record_info(fields, authorization)}
+                                   ,{type, bag}
+                                   ,{disc_copies, [node()]}]).
 
 wait_for_tables() ->
-    mnesia:wait_for_tables([domain_group, developer], 10000).
+    mnesia:wait_for_tables([domain_group, developer, authorization], 10000).
 
 announce_storage_to_nodes([Node|T]) when Node =:= node() ->
     announce_storage_to_nodes(T);
@@ -79,7 +83,8 @@ copy_storage_to_node(Node) ->
 
 copy_tables(Node) ->
     _R1 = mnesia:add_table_copy(domain_group, Node, disc_copies),
-    _R1 = mnesia:add_table_copy(developer, Node, disc_copies).
+    _R1 = mnesia:add_table_copy(developer, Node, disc_copies),
+    _R1 = mnesia:add_table_copy(authorization, Node, disc_copies).
 
 stop(_State) ->
     ok.

@@ -73,7 +73,7 @@ defmodule Proxy42.ControlApi.Apis do
            {:ok, strategy} <- validate_and_transform({:strategy, params["strategy"]}),
            {:ok, additional_headers} <- validate_and_transform({:additional_headers, params["additional_headers"]}),
            {:ok, rate_limit} <- validate_and_transform({:rate_limit, params["rate_limit"]}),
-           {:ok, developers} <- validate_and_transform({:developers, params["developers"]}),
+           # {:ok, developers} <- validate_and_transform({:developers, params["developers"]}),
            transformed_params = %{:hostname => hostname,
              :servers => servers,
              :frontend_prefix => frontend_prefix,
@@ -81,7 +81,7 @@ defmodule Proxy42.ControlApi.Apis do
              :strategy => strategy,
              :additional_headers => additional_headers,
              :rate_limit => rate_limit,
-             :developers => developers
+             # :developers => developers
            },
         do: {:ok, transformed_params}
     case with_no_pipe_stupidity do

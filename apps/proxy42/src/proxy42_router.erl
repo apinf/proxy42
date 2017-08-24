@@ -92,7 +92,6 @@ auth(AuthInfo, Req, State) ->
   % TODO: Get auth, ratelimit results based on IPorDomain
   DomainGroup = maps:get(domain_group, State),
   APIId = extract_id(DomainGroup),
-  % FIXME TODAY: developers does not belong here
   erlang:display(AuthInfo),
   % TODO: Get authmodule dynamically
   Response = auth_key:auth(AuthInfo, APIId),

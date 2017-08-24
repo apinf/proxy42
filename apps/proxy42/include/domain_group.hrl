@@ -7,5 +7,4 @@
           strategy,
           additional_headers,
           rate_limit,
-          auth_config,
-          developers}).
+          auth_config}).
