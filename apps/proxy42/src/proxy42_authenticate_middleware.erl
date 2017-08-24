@@ -13,13 +13,15 @@ execute(Req, Env) ->
   % Mode can be keep or strip, and will decide if the header or query param
   % will be consumed by us or retained in the request.
   {AuthConfig, Req4, HandlerState1} = InterfaceModule:auth_config(Req3, HandlerState),
-  {AuthResult, Req6, HandlerState3} =
-        case AuthConfig of
-            {authorization_needed, _,_,_} ->
-                AuthInfo = extract(AuthConfig, Req4),
-                InterfaceModule:auth(AuthInfo, Req4, HandlerState1);
-                   {_,_,_,_} -> {allow, Req4, HandlerState1}
-               end,
+  {Strategy, StrategyConfig} = AuthConfig,
+  HeadersAndQueryParams = apply(Strategy, auth_parameters, [StrategyConfig]),
+  AuthInfoRev = lists:foldl(
+                  fun (X, Acc) -> [extract(X, Req4) | Acc] end,
+                  [],
+                  HeadersAndQueryParams),
+  AuthInfo = lists:reverse(AuthInfoRev),
+  Req5 = Req4,
+  {AuthResult, Req6, HandlerState3} = InterfaceModule:auth(AuthInfo, Req5, HandlerState1),
   Req7 = vegur_utils:set_handler_state(HandlerState3, Req6),
   case AuthResult of
     allow -> {ok, Req7, Env};
@@ -51,17 +53,15 @@ handle_rate_limit(User, Req, Env) ->
       {error, 429, Req3}
   end.
 
-extract({authorization_needed, header, Header, Mode}, Req) ->
-  case cowboyku_req:header(Header, Req) of
-    {undefined, Req} -> false;
-    {Val, Req} -> {true, Val}
-  end;
-extract({authorization_needed, qs, Param, Mode}, Req) ->
-  %% TODO
-  case cowboyku_req:qs_val(Param, Req) of
-    undefined -> false;
-    Val -> {true, Val}
-  end.
+extract({header, Header, Mode}, Req) ->
+  {Val, _Req} =  cowboyku_req:header(Header, Req),
+  % Can be undefined
+  {header, Header, Val};
+extract({query, Param, Mode}, Req) ->
+  %% TODO handle mode
+  % Can be undefined
+  Val = cowboyku_req:qs_val(Param, Req),
+  {query, Param, Val}.
 
 str(X) when is_integer(X) -> erlang:integer_to_binary(X);
 str(X) when is_binary(X) -> X;

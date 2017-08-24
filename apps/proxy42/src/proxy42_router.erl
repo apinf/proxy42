@@ -77,13 +77,13 @@ backend_request_params(Body, Upstream, State) ->
              end,
   {Headers1, Req7} = vegur_proxy42_middleware:add_proxy_headers(Headers, Req6),
   Params = {Method, Headers1, Body, FullPath, Host},
-  erlang:display(Params),
   {Params, Req7, State}.
 
 auth_config(Req, State) ->
   DomainGroup = maps:get(domain_group, State),
   Config = DomainGroup#domain_group.auth_config,
-  {Config, Req, State}.
+  {Config, Req, State},
+  {{auth_key, []}, Req, State}.
 
 auth(AuthInfo, Req, State) ->
   % {allow, Req, State}.
@@ -92,7 +92,6 @@ auth(AuthInfo, Req, State) ->
   % TODO: Get auth, ratelimit results based on IPorDomain
   DomainGroup = maps:get(domain_group, State),
   APIId = extract_id(DomainGroup),
-  erlang:display(AuthInfo),
   % TODO: Get authmodule dynamically
   Response = auth_key:auth(AuthInfo, APIId),
   {Response, Req, State}.
