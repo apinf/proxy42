@@ -23,7 +23,6 @@ start() ->
 init() ->
     %% TODO: Take in a list of distributed hosts.
     Nodes = net_adm:world_list([]),
-    erlang:display(Nodes),
     NodeCount = length(Nodes),
     case NodeCount > 1 of
         true ->
@@ -90,6 +89,5 @@ stop(_State) ->
     ok.
 
 find_domain_group(Pattern) ->
-    erlang:display(Pattern),
     [DomainGroup] = mnesia:dirty_match_object(Pattern),
     DomainGroup.
