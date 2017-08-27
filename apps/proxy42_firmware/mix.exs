@@ -71,7 +71,7 @@ defmodule Proxy42.Firmware.Mixfile do
   def system("rpi"), do: {:nerves_system_rpi, ">= 0.0.0", runtime: false}
   def system("rpi0"), do: {:nerves_system_rpi0, ">= 0.0.0", runtime: false}
   def system("rpi2"), do: {:nerves_system_rpi2, ">= 0.0.0", runtime: false}
-  def system("rpi3"), do: {:nerves_system_rpi3, ">= 0.0.0", runtime: false}
+  def system("rpi3"), do: {:nerves_system_rpi3, "~> 0.12.0", runtime: false}
   def system("bbb"), do: {:nerves_system_bbb, ">= 0.0.0", runtime: false}
   def system("linkit"), do: {:nerves_system_linkit, ">= 0.0.0", runtime: false}
   def system("ev3"), do: {:nerves_system_ev3, ">= 0.0.0", runtime: false}
