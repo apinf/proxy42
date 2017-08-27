@@ -40,7 +40,7 @@ defmodule Proxy42.ControlApi.Mixfile do
       {:plug, "~> 1.0"},
       {:poison, "~>3.0"},
       {:uuid, github: "okeuday/uuid", tag: "v1.5.1.1"},
-      {:proxy42, in_umbrella: true}
+      {:proxy42_core, in_umbrella: true}
     ]
   end
 end

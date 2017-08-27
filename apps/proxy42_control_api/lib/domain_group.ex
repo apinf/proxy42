@@ -1,6 +1,6 @@
 defmodule Proxy42.DomainGroup do
   # Find the header, extract record definition
-  @domain_group_hrl Path.expand("../../apps/proxy42/include/domain_group.hrl")
+  @domain_group_hrl Path.expand("../../apps/proxy42_core/include/domain_group.hrl")
   @domain_group Record.extract(:domain_group, from: @domain_group_hrl)
   @domain_group_fields @domain_group |> Keyword.keys
 
