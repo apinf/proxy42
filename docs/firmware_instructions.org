@@ -23,7 +23,7 @@ https://github.com/fhunleth/fwup#installing
 
 and then other dependencies:
 #+BEGIN_SRC sh
-  sudo apt-get install ssh-askpass squashfs-tols git g++ libssl-dev libncurses5-dev bc m4 make unzip cmake python
+  sudo apt-get install ssh-askpass squashfs-tools git g++ libssl-dev libncurses5-dev bc m4 make unzip cmake python
 #+END_SRC
 
 ** Mac:
