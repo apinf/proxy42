@@ -1,0 +1,42 @@
+* Install dependencies for nerves-project
+Install erlang and elixir:
+
+Currently Erlang 19 and elixir 1.4 is required.
+Asdf(https://github.com/asdf-vm/asdf) is a version manager which can manage 
+the correct versions for you. Alternatively, kerl can be used for managing erlang versions.
+
+After installing asdf, 
+#+BEGIN_SRC sh
+asdf plugin-add erlang
+asdf plugin-add elixir
+asdf install erlang 19.2
+asdf global erlang 19.2
+asdf install elixir 1.4.0
+asdf global elixir 1.4.0
+#+END_SRC
+
+Install other nerves-dependencies:
+** Linux
+Install fwup:
+
+https://github.com/fhunleth/fwup#installing
+
+and then other dependencies:
+#+BEGIN_SRC sh
+  sudo apt-get install ssh-askpass squashfs-tools git g++ libssl-dev libncurses5-dev bc m4 make unzip cmake python
+#+END_SRC
+
+** Mac:
+#+BEGIN_SRC sh
+  brew install fwup squashfs coreutils
+#+END_SRC
+
+* Build firmware image for rpi3
+#+BEGIN_SRC sh
+  git clone https://github.com/apinf/proxy42 --branch experiments/nerves
+  cd proxy42/apps/proxy42_firmware
+  export MIX_TARGET=rpi3
+  mix do local.hex, local.rebar
+  mix archive.install https://github.com/nerves-project/archives/raw/master/nerves_bootstrap.ez
+  mix do deps.get, firmware
+#+END_SRC
