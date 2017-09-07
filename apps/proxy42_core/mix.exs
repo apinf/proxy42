@@ -30,7 +30,7 @@ defmodule Proxy42.Core.Mixfile do
 
   def application do
     [
-      mod: {:proxy42_app, []},
+      mod: {:proxy42_core_app, []},
       env: env(),
       applications: [
         :kernel,

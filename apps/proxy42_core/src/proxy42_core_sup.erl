@@ -3,7 +3,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(proxy42_sup).
+-module(proxy42_core_sup).
 
 -behaviour(supervisor).
 
