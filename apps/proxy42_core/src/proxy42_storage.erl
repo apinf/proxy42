@@ -3,10 +3,8 @@
 -include("developers.hrl").
 -include("authorization.hrl").
 
-%%FIXME: Remove export_all
--compile([export_all]).
-
--export([start/2, init/0, stop/1]).
+-export([start/0, start/2, init/0, stop/1]).
+-export([find_domain_group/1]).
 
 %% announce
 -record(storage_announce, {sender, node}).
@@ -42,15 +40,26 @@ init_storage(true) ->
     wait_for_tables().
 
 create_tables() ->
-    mnesia:create_table(domain_group, [{attributes, record_info(fields, domain_group)}
+    ok = ensure_table(domain_group, [{attributes, record_info(fields, domain_group)}
                                        ,{type, bag}
                                       ,{disc_copies, [node()]}]),
-    mnesia:create_table(developer, [{attributes, record_info(fields, developer)}
+    ok = ensure_table(developer, [{attributes, record_info(fields, developer)}
                                   ,{type, bag}
                                    ,{disc_copies, [node()]}]),
-    mnesia:create_table(authorization, [{attributes, record_info(fields, authorization)}
+    ok = ensure_table(authorization, [{attributes, record_info(fields, authorization)}
                                    ,{type, bag}
                                    ,{disc_copies, [node()]}]).
+ensure_table(Tab, Opts) ->
+    case mnesia:create_table(Tab, Opts) of
+        {atomic, ok} -> ok;
+        {aborted, {already_exists, Tab}} ->
+            IntendedAttrs = proplists:get_value(attributes, Opts),
+            TableAttrs = mnesia:table_info(Tab, attributes),
+            case IntendedAttrs == TableAttrs of
+                true -> ok;
+                false -> {error, attributes}
+            end
+    end.
 
 wait_for_tables() ->
     mnesia:wait_for_tables([domain_group, developer, authorization], 10000).
