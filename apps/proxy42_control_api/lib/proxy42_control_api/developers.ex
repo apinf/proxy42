@@ -20,10 +20,7 @@ defmodule Proxy42.ControlApi.Developers do
   end
 
   post "/" do
-    {id, key} = Store.add_developer!(conn.body_params)
-    send_resp(conn, 201, ~s({"id": "#{id}", "key":"#{key}"}))
+    id = Store.add_developer!(conn.body_params)
+    send_resp(conn, 201, ~s({"id": "#{id}"))
   end
-
-  # TODO: Revoke key
-
 end

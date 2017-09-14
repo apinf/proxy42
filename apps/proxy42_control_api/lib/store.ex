@@ -72,7 +72,7 @@ defmodule Proxy42.Store do
 
   def exists?(:developer, developer) do
     # FIXME: Don't write patterns directly
-    case :mnesia.dirty_match_object({:developer, developer, :_, :_}) do
+    case :mnesia.dirty_match_object({:developer, developer, :_}) do
       [_] -> true
       [] -> false
     end
@@ -87,19 +87,19 @@ defmodule Proxy42.Store do
 
   # TODO: Rethink this
   def get_developers(_params) do
-    :mnesia.dirty_match_object({:developer, :_,:_,:_})
-    |> Enum.map(fn(x) -> %{"id": :erlang.element(2, x)} end)
+    :mnesia.dirty_match_object({:developer, :_, :_})
+    |> Enum.map(fn({:developer, id, email}) ->
+      %{"id": id, "email": email} end)
   end
 
-  # TODO: Rethink format of id and key. Both are uuid v4 for now.
   def add_developer!(_params) do
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
-    key = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
+    # TODO: accept email from input
     {:atomic, :ok} = :mnesia.transaction( fn ->
-      {:developer, id, key, {:nopassword}}
+      {:developer, id, "info@apinf.io"}
       |> :mnesia.write
     end)
-    {id, key}
+    id
   end
 
   def add_authorization(params) do
