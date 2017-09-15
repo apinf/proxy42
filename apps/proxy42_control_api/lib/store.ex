@@ -24,10 +24,7 @@ defmodule Proxy42.Store do
 
   def add_api(params) do
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
-    # TODO Get config from user.
-    default_auth_config = {:authorization_needed, :header, <<"authorization">>, :strip}
     new_params = Map.put(params, :id, id)
-    |> Map.put(:auth_config, default_auth_config)
     transaction(fn ->
       DG.domain_group() # creates empty record
       |> DG.update_domain_group(new_params)
@@ -92,11 +89,10 @@ defmodule Proxy42.Store do
       %{"id": id, "email": email} end)
   end
 
-  def add_developer!(_params) do
+  def add_developer!(params) do
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
-    # TODO: accept email from input
     {:atomic, :ok} = :mnesia.transaction( fn ->
-      {:developer, id, "info@apinf.io"}
+      {:developer, id, params["email"]}
       |> :mnesia.write
     end)
     id

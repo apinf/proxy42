@@ -35,6 +35,29 @@ lookup_domain_name(IncomingDomain, Upstream, State) ->
   NewState = maps:put(domain_group, DomainGroup, State),
   {ok, DomainGroup, Req1, NewState}.
 
+auth_config(Req, State) ->
+  DomainGroup = maps:get(domain_group, State),
+  Config = DomainGroup#domain_group.auth_config,
+  {Config, Req, State}.
+
+auth(AuthInfo, Req, State) ->
+  % {allow, Req, State}.
+  % {deny, Req, State}.
+  % {{rate_limit, "whoever"}, Req, State}.
+  % TODO: Get auth, ratelimit results based on IPorDomain
+  DomainGroup = maps:get(domain_group, State),
+  APIId = extract_id(DomainGroup),
+  % TODO: Get authmodule dynamically
+  Response = auth_key:auth(AuthInfo, APIId),
+  {Response, Req, State}.
+  % TODO: Merge auth, ratelimit results goes here
+
+rate_limit(User, Req, State) ->
+  % {allow, State}.
+  % {deny, State}.
+  % {{deny, 120}, State}.
+  {{allow, 100, 99, 120}, State}.
+
 checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State = #{ tries := Tried }) ->
   #domain_group{servers = Servers} = DomainGroup,
   Available = Servers -- Tried,
@@ -79,32 +102,6 @@ backend_request_params(Body, Upstream, State) ->
   Params = {Method, Headers1, Body, FullPath, Host},
   {Params, Req7, State}.
 
-auth_config(Req, State) ->
-  DomainGroup = maps:get(domain_group, State),
-  Config = DomainGroup#domain_group.auth_config,
-  {Config, Req, State},
-  {{auth_key, []}, Req, State}.
-
-auth(AuthInfo, Req, State) ->
-  % {allow, Req, State}.
-  % {deny, Req, State}.
-  % {{rate_limit, "whoever"}, Req, State}.
-  % TODO: Get auth, ratelimit results based on IPorDomain
-  DomainGroup = maps:get(domain_group, State),
-  APIId = extract_id(DomainGroup),
-  % TODO: Get authmodule dynamically
-  Response = auth_key:auth(AuthInfo, APIId),
-  {Response, Req, State}.
-  % TODO: Merge auth, ratelimit results goes here
-
-extract_id(DomainGroup) ->
-    DomainGroup#domain_group.id.
-
-rate_limit(User, Req, State) ->
-  % {allow, State}.
-  % {deny, State}.
-  % {{deny, 120}, State}.
-  {{allow, 100, 99, 120}, State}.
 
 transform_response_headers(Headers, State = #{domain_group := DG}) ->
   #domain_group{hostname = NewHost} = DG,
@@ -146,3 +143,8 @@ error_page(_, _DomainGroup, Upstream, HandlerState) ->
 
 terminate(_, _, _) ->
   ok.
+
+% ------------------------------
+
+extract_id(DomainGroup) ->
+    DomainGroup#domain_group.id.
