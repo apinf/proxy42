@@ -26,9 +26,14 @@ defmodule Proxy42.Store do
     id = :uuid.uuid_to_string(:uuid.get_v4(), :binary_standard)
     new_params = Map.put(params, :id, id)
     transaction(fn ->
-      DG.domain_group() # creates empty record
-      |> DG.update_domain_group(new_params)
-      |> :mnesia.write
+      if is_api_unique_enough(params) do
+        DG.domain_group() # creates empty record
+        |> DG.update_domain_group(new_params)
+        |> :mnesia.write
+      else
+        # TODO: Find a better message, include conflicting api?
+        {:error, "conflicts with existing apis"}
+      end
     end)
     |> case do
       {:ok, :ok} -> {:ok, id}
@@ -108,6 +113,16 @@ defmodule Proxy42.Store do
       {:atomic, _} -> :ok
       {:aborted, reason} -> {:error, reason}
     end
+  end
+
+  @doc false
+  def is_api_unique_enough(params) do
+    fp = params["frontend_prefix"]
+    :mnesia.dirty_match_object(DG.pattern(%{frontend_prefix: fp}))
+    |> case do
+         [] -> true
+         _ -> false
+       end
   end
 
   defp transaction(t) do
