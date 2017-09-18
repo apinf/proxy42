@@ -27,6 +27,8 @@ defmodule Proxy42.DomainGroup do
                        ] })
   end
 
+  @type domain_group :: record(:domain_group)
+  @spec pattern(map()) :: domain_group()
   def pattern(params) do
     # A pattern is a record with all fields either having constraints or the
     # atom :_. So we create a match all pattern with :_ everywhere and
