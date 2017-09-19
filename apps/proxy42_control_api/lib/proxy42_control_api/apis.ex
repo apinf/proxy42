@@ -57,7 +57,7 @@ defmodule Proxy42.ControlApi.Apis do
   # TODO: whitelist reasons to pass on, send something went wrong and 500 for others.
   # I know, sorry.
   def handle_errors(conn, %{kind: _kind, reason: reason, stack: stack}) do
-    send_resp(conn, conn.status, ~s[{"error": "#{inspect(reason)}"])
+    send_resp(conn, conn.status, ~s[{"error": "#{inspect(reason)}"}])
   end
 
   def validate_and_transform(conn = %Plug.Conn{method: "POST"}, _opts) do

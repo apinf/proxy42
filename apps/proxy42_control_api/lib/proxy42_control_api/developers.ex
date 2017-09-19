@@ -21,6 +21,6 @@ defmodule Proxy42.ControlApi.Developers do
 
   post "/" do
     id = Store.add_developer!(conn.body_params)
-    send_resp(conn, 201, ~s({"id": "#{id}"))
+    send_resp(conn, 201, ~s({"id": "#{id}"}))
   end
 end
