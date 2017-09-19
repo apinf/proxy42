@@ -41,10 +41,10 @@ init_storage(true) ->
 
 create_tables() ->
     ok = ensure_table(domain_group, [{attributes, record_info(fields, domain_group)}
-                                       ,{type, bag}
+                                       ,{type, set}
                                       ,{disc_copies, [node()]}]),
     ok = ensure_table(developer, [{attributes, record_info(fields, developer)}
-                                  ,{type, bag}
+                                  ,{type, set}
                                    ,{disc_copies, [node()]}]),
     ok = ensure_table(authorization, [{attributes, record_info(fields, authorization)}
                                    ,{type, bag}
