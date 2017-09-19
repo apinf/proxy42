@@ -15,14 +15,11 @@ defmodule Proxy42.Mixfile do
   end
 
   def application do
-    [
-      included_applications: proxy42_components(),
-      mod: {Proxy42.Application, []},
-    ]
+    []
   end
 
   defp deps do
-    overrides() ++ proxy42_component_deps()
+    overrides() ++ proxy42_apps()
   end
 
   defp overrides do
@@ -35,19 +32,10 @@ defmodule Proxy42.Mixfile do
     ]
   end
 
-  defp proxy42_components do
-    [ :proxy42_core, :proxy42_control_api ]
-  end
-
-  # Component otp applications are listed here to generate compilation
-  # dependencies However, they will be managed entirely by proxy42 under its own
-  # supervision tree, and hence shouldd not be started by the erlang vm
-  # automatically. runtime: false ensures that they are not added to
-  # :applications key in application resource file (.app). They will be listed
-  # under `included_applications` instead.
-
-  defp proxy42_component_deps do
-    proxy42_components()
-    |> Enum.map(fn x -> {x, in_umbrella: true, runtime: false} end)
+  defp proxy42_apps do
+    [
+      {:proxy42_core, in_umbrella: true},
+      {:proxy42_control_api, in_umbrella: true},
+    ]
   end
 end
