@@ -23,8 +23,11 @@ defmodule Proxy42.ControlApi.Apis do
   end
 
   post "/" do
-   id = Store.add_api!(conn.body_params)
-   send_resp(conn, 201, ~s({"id": "#{id}"}))
+    case Store.add_api(conn.body_params) do
+      #XXX: correct error code; dig into add_api
+      {:error, reason} -> send_resp(conn, 400, ~s({"error": "#{reason}"}))
+      {:ok, id} -> send_resp(conn, 201, ~s({"id": "#{id}"}))
+    end
   end
 
   get "/:id" do
