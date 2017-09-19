@@ -32,7 +32,7 @@ defmodule Proxy42.Store do
         |> :mnesia.write
       else
         # TODO: Find a better message, include conflicting api?
-        {:error, "conflicts with existing apis"}
+        :mnesia.abort("conflicts with existing apis")
       end
     end)
     |> case do
@@ -117,7 +117,7 @@ defmodule Proxy42.Store do
 
   @doc false
   def is_api_unique_enough(params) do
-    fp = params["frontend_prefix"]
+    fp = params[:frontend_prefix]
     :mnesia.dirty_match_object(DG.pattern(%{frontend_prefix: fp}))
     |> case do
          [] -> true
