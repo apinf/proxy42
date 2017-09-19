@@ -34,7 +34,10 @@ init([]) ->
   Storage = #{ id => proxy42_storage,
                start => {proxy42_storage, start, []}
              },
-  Children = [Storage, Endpoint],
+  %%TODO: Create and add plugin supervisor
+  PluginManager = #{ id => proxy42_plugins,
+                     start => {proxy42_plugins, start, []}},
+  Children = [Storage, Endpoint, PluginManager],
   {ok, {Config, Children}}.
 %%====================================================================
 %% Internal functions

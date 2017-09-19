@@ -4,7 +4,7 @@
 -include("authorization.hrl").
 
 -export([start/0, start/2, init/0, stop/1]).
--export([find_domain_group/1]).
+-export([find_domain_group/1, ensure_table/2]).
 
 %% announce
 -record(storage_announce, {sender, node}).

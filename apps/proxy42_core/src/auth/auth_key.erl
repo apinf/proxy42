@@ -1,5 +1,11 @@
 -module(auth_key).
--export([auth/2, parse_basic/2, parse_auth_header/1, auth_parameters/1]).
+-export([init/0, terminate/1]).
+-export([auth/2, auth_parameters/1]).
+-export([issue_key/1]).
+-export([handle_http/2]).
+-define(KEYSTAB, auth_key_developers).
+
+-define(PLUG, 'Elixir.Plug.Conn').
 
 parse_auth_header(<<"Bearer ", R/binary>>) when R =/= <<>> ->
     % TODO: validate R.
@@ -11,6 +17,22 @@ parse_basic(<< $:, Password/binary >>, UserID) ->
     {basic, UserID, Password};
 parse_basic(<< C, R/binary >>, UserID) ->
     parse_basic(R, << UserID/binary, C >>).
+
+init() ->
+   % {sup, pid} is the supervision tree of plugin if it exists.
+   % {strategies, [{strategy_type, strategy_name}]}
+   % slug, string | binary
+   % tables, [{tablename, attributes}]
+   KeysTab = {?KEYSTAB, [key, developer_id]},
+   Opts = [
+           {slug, <<"auth_key">>},
+           {tables, [KeysTab]},
+           {strategies, [{auth, auth_key}]}
+          ],
+   {ok, Opts}.
+
+terminate(Reason) ->
+    ok.
 
 auth_parameters(_Config) ->
     [{header, <<"authorization">>, strip}].
@@ -28,9 +50,32 @@ auth(AuthInfo, API) ->
             end
     end.
 
+-type status() :: non_neg_integer().
+-type body() :: iolist().
+-type headers() :: [{binary(), binary()}].
+% -spec handle_http(binary(), headers(), body()) ->
+%                         {ok, status(), headers(), body()}
+%                         | {error, term()}.
+% TODO: Create a better route
+% TODO: check if dev id exists
+handle_http([<<"issue_key">>], Conn) ->
+    Status = 256,
+    ResponseHeaders = [],
+    ResponseBody = [],
+    {ok, Status, ResponseHeaders, ResponseBody},
+    DeveloperId = maps:get(<<"developer_id">>, maps:get(body_params, Conn)),
+    Key = issue_key(DeveloperId),
+    ?PLUG:send_resp(Conn, 201, ["{\"key\":\"", Key, "\"}"]).
+
 identify_key(Key) ->
-    case mnesia:dirty_match_object({developer, '_', Key, '_'}) of
+    case proxy42_plugin_storage:get(?KEYSTAB, Key) of
         [] -> deny;
-        [{_, Id, _, _}] -> Id
+        [{?KEYSTAB, Key, Id}] -> Id
     end.
 
+% XXX: also accept developer record?
+issue_key(DeveloperId) ->
+    Key = uuid:uuid_to_string(uuid:get_v4(), binary_standard),
+    Entry = {?KEYSTAB, Key, DeveloperId},
+    {atomic, ok} = proxy42_plugin_storage:insert(?KEYSTAB, Entry),
+    Key.
