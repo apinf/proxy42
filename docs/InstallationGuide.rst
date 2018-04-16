@@ -57,33 +57,48 @@ be overhauled soon.
 Registering a developer
 -----------------------
 
-A developer can be registered by sending a POST request with an empty
-body to localhost:4001/developers
+A developer can be registered by sending a POST request with a JSON
+body containing the registration email to localhost:4001/developers
 
 .. code:: shell
 
-       curl localhost:4001/developers
+       curl -vvv localhost:4001/developers -H "Content-Type: application/json" -XPOST localhost:4001/developers -d '{"email": "test@apinf.io"}'
 
-The response will provide a developer id and an API key. e.g
+The response will provide a developer id. e.g
 
 .. code:: json
 
        {
-       "id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92", 
-       "key": "311691e7-8f47-45eb-b606-9bc5c23ba7a9"
+       "id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92",
        }
+
 
 Intended API:
 ~~~~~~~~~~~~~
 
 The POST body would accept additional metadata related to the developer.
-The authentication strategy should be decoupled from developer account.
 When key based authentication is an option, it should be possible to
 associate multiple keys with a developer account.
 
 Developer registration *may* require additional steps, such as email
 verification, or may require authentication and be limited to proxy
 administrators.
+
+Issuing a key:
+______________
+
+Key based authentication of developers is available as an auth plugin.
+To issue a key to a developer, one sends the developer id to the auth API as follows:
+
+.. code:: shell
+
+   curl -vvv localhost:4001/plugins/auth_key/issue_key -H 'Content-Type: application/json -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}'
+
+The response will provide a key:
+
+.. code:: json
+
+   {"key": "21149f5c-ade2-498a-9e63-705c1c540d85"}
 
 Registering an API
 ------------------
@@ -98,7 +113,7 @@ An API is registered with the proxy as follows:
         "frontend_prefix": "/awesome-api/",
         "backend_prefix": "/does-this-work/",
         "strategy": "random", "rate_limit": 43,
-        "additional_headers" : "", "developers": ["d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"]
+        "additional_headers" : "", "auth_config": "auth_key"
         }' http://localhost:4001/apis
 
 The above registers an api where:
@@ -108,18 +123,25 @@ The above registers an api where:
    and ``1.2.3.4:5678``
 -  after replacing ``/awesome-api/`` with ``/does-this-work`` in the url
 -  and setting the Host header to example.org
--  and the developer with id "d8d6..." is the only one allowed to make
-   such requests.
+-  and auth_config specifies the auth plugin that takes care of authentication
 
 ``rate_limit`` is required but not validated and enforced right now.
 
-Intended API:
-~~~~~~~~~~~~~
+The respoonse provides an API id:
 
-Associating developers with apis should be decoupled from registering
-apis itself. A convenience may be allowed to preassign allowed
-developers. Registering an api SHOULD require authentication and
-appropriate permissions.
+.. code:: json
+
+   {"id": "9f0222ed-86f4-42ad-96e3-32c10b90ed0e"}
+
+Authorizing a developer
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To authorize a developer to access an API, a request needs to be sent to localhost:4001/authorizations
+with a body containing both the developer id and the API id.
+
+..code:: shell
+curl -vvv -XPOST -H "Content-Type: application/json" -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92", "api_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}' localhost:4001/
+
 
 Testing the API
 ---------------
@@ -134,3 +156,5 @@ Testing the API
 This request will be allowed, and the response would be forwarded back
 to the client. Requests without the correct API key would receive a 401
 Unauthorized response.
+
+TODO: Currently we send 403 Forbidden
