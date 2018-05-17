@@ -32,7 +32,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/API'
+              $ref: '#/definitions/APIResponse'
     post:
       tags:
       - admins
@@ -48,7 +48,7 @@ paths:
         name: API
         description: API parameters to be registered
         schema:
-          $ref: '#/definitions/API'
+          $ref: '#/definitions/APIRequest'
       responses:
         201:
           description: API registered
@@ -76,10 +76,27 @@ paths:
         200:
           description: existing API details
           schema:
-            $ref: '#/definitions/API'
+            $ref: '#/definitions/APIResponse'
+            
+            
+  /developers:
+    get:
+      tags:
+      - admins
+      summary: get a list of all developers
+      operationId: getDevelopers
+      description: |
+        Get a list of all registered developers
+      produces:
+      - application/json
+      responses:
+        200:
+          description: existing developer details
+          schema:
+            $ref: '#/definitions/DeveloperResponse'
         
 definitions:
-  API:
+  APIResponse:
     type: object
     required:
     - id
@@ -117,3 +134,60 @@ definitions:
         example: ""
       rate_limit:
         type: integer
+        
+  APIRequest:
+    type: object
+    required:
+    - hostname
+    - servers
+    - frontend_prefix
+    - backend_prefix
+    - strategy
+    - additional_headers
+    - rate_limit
+    properties:
+      hostname:
+        type: string
+        example: "https://httpbin.org"
+      servers:
+        type: array
+        items: 
+          type: string
+        example: ["https://httpbin.org", "10.3.100.207"]
+      frontend_prefix:
+        type: string
+        example: "/v1/"
+      backend_prefix:
+        type: string
+        example: "/v0/"
+      strategy:
+        type: string
+        enum: ["random"]
+      additional_headers:
+        type: string
+        example: ""
+      rate_limit:
+        type: integer
+        
+  DeveloperRequest:
+    type: object
+    required:
+    - email
+    properties:
+      email:
+        type: string
+        example: "test@apinf.io"
+          
+  DeveloperResponse:
+    type: object
+    required:
+    - id
+    - email
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      email:
+        type: string
+        example: "test@apinf.io"
