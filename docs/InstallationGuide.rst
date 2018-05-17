@@ -1,6 +1,19 @@
 Prerequisites
 =============
 
+Running Docker image
+--------------------
+
+The easiest way to run proxy42 is via its docker image.
+
+.. code:: shell
+
+   docker pull apinf/proxy42:release
+
+   docker run -p 4001:4001 -p 8080:8080 -it apinf/proxy42:release console
+
+Alternatively, you can build the source:
+
 Installing elixir
 -----------------
 
@@ -51,7 +64,7 @@ This section is expected to change relatively frequently as the admin
 API is iterated on. This document will be updated as and when
 appropriate.
 
-The current version of the "api" is extremely clunky, and is expected to
+The current version of the "API" is extremely clunky, and is expected to
 be overhauled soon.
 
 Registering a developer
@@ -92,7 +105,7 @@ To issue a key to a developer, one sends the developer id to the auth API as fol
 
 .. code:: shell
 
-   curl -vvv localhost:4001/plugins/auth_key/issue_key -H 'Content-Type: application/json -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}'
+   curl -vvv localhost:4001/plugins/auth_key/issue_key -H 'Content-Type: application/json' -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}'
 
 The response will provide a key:
 
@@ -127,7 +140,7 @@ The above registers an api where:
 
 ``rate_limit`` is required but not validated and enforced right now.
 
-The respoonse provides an API id:
+The response provides an API id:
 
 .. code:: json
 
@@ -139,19 +152,20 @@ Authorizing a developer
 To authorize a developer to access an API, a request needs to be sent to localhost:4001/authorizations
 with a body containing both the developer id and the API id.
 
-..code:: shell
-curl -vvv -XPOST -H "Content-Type: application/json" -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92", "api_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}' localhost:4001/
+.. code:: shell
+curl -vvv -XPOST -H "Content-Type: application/json" -d '{"developer_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92", "api_id": "d8d63fd0-3987-48dc-9ac2-2f2f5fe49e92"}' localhost:4001/authorizations
 
 
-Testing the API
----------------
+Testing API authorization
+-------------------------
 
 .. code:: shell
 
-        curl -vvv -H "Authorization: Bearer 311691e7-8f47-45eb-b606-9bc5c23ba7a9" $PROXY_BASE/1500/
+        curl -vvv -H "Authorization: Bearer 311691e7-8f47-45eb-b606-9bc5c23ba7a9" $PROXY_BASE/awesome-api/
 
 ``$PROXY_BASE`` would be ``localhost:8080`` when testing locally, or
 ``<domain-name-or-ip>:8080`` if the proxy is running on a different machine.
+``awesome-api`` should be the frontend_prefix of a registered API.
 
 This request will be allowed, and the response would be forwarded back
 to the client. Requests without the correct API key would receive a 401
