@@ -1,0 +1,19 @@
+sudo: required
+
+language: elixir
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+      httpie
+
+before_install:
+  - docker pull apinf/proxy42:release
+  - docker run -d -p 4001:4001 -p 8080:8080 apinf/proxy42:release foreground
+  - docker ps -a
+
+script:
+  - bash ./apps/proxy42_control_api/test/apitest.sh
