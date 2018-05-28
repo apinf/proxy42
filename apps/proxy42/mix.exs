@@ -16,7 +16,7 @@ defmodule Proxy42.Mixfile do
 
   def application do
     [
-      included_applications: proxy42_components(),
+      # included_applications: proxy42_components(),
       mod: {Proxy42.Application, []},
     ]
   end
@@ -31,7 +31,8 @@ defmodule Proxy42.Mixfile do
        github: "ninenines/cowlib", tag: "1.0.0", override: true,
        compile: ~s(ERLC_OPTS="+'{nowarn_deprecated_function, [{crypto, rand_bytes, 1}]}'" make all)
       },
-      {:ranch, "==1.1.0", override: true},
+      # {:ranch, "==1.1.0", override: true},
+      {:ranch, github: "ninenines/ranch", tag: "1.4.0", override: true}
     ]
   end
 
@@ -48,6 +49,7 @@ defmodule Proxy42.Mixfile do
 
   defp proxy42_component_deps do
     proxy42_components()
-    |> Enum.map(fn x -> {x, in_umbrella: true, runtime: false} end)
+    # |> Enum.map(fn x -> {x, in_umbrella: true, runtime: false} end)
+    |> Enum.map(fn x -> {x, in_umbrella: true, runtime: true} end)
   end
 end

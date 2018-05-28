@@ -20,8 +20,8 @@ defmodule Proxy42.ControlApi.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [
-      extra_applications: [:logger],
-      mod: {Proxy42.ControlApi.Application, []}
+      extra_applications: [:logger, :inets],
+      # mod: {Proxy42.ControlApi.Application, []}
     ]
   end
 
