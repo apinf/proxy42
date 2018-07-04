@@ -24,15 +24,15 @@ execute(Req, Env) ->
   {AuthResult, Req6, HandlerState3} = InterfaceModule:auth(AuthInfo, Req5, HandlerState1),
   Req7 = vegur_utils:set_handler_state(HandlerState3, Req6),
   case AuthResult of
-    allow -> {ok, Req7, Env};
-    {rate_limit, User} -> handle_rate_limit(User, Req7, Env);
-    deny -> {error, 403, Req7}
+    ignore_rate_limit -> {ok, Req7, Env};
+    deny -> {error, 403, Req7};
+    RLTag -> handle_rate_limit(RLTag, Req7, Env)
   end.
 
 
-handle_rate_limit(User, Req, Env) ->
+handle_rate_limit(RLTag, Req, Env) ->
   {InterfaceModule, HandlerState, Req1} = vegur_utils:get_interface_module(Req),
-  {RL, HandlerState1} = InterfaceModule:rate_limit(User, Req1, HandlerState),
+  {RL, HandlerState1} = InterfaceModule:rate_limit(RLTag, Req1, HandlerState),
   Req2 = vegur_utils:set_handler_state(HandlerState1, Req1),
   case RL of
     allow ->

@@ -48,15 +48,19 @@ auth(AuthInfo, Req, State) ->
   DomainGroup = maps:get(domain_group, State),
   APIId = extract_id(DomainGroup),
   % TODO: Get authmodule dynamically
-  Response = auth_key:auth(AuthInfo, APIId),
+  AuthModule = auth_key,
+  Response = AuthModule:auth(AuthInfo, APIId),
   {Response, Req, State}.
-  % TODO: Merge auth, ratelimit results goes here
 
-rate_limit(User, Req, State) ->
+rate_limit(RLTag, _Req, State) ->
   % {allow, State}.
+  % {{allow, Limit, Remaining, Reset}, State}.
   % {deny, State}.
-  % {{deny, 120}, State}.
-  {{allow, 100, 99, 120}, State}.
+  % {{deny, RetryAfter}, State}.
+  DomainGroup = maps:get(domain_group, State),
+  RLModule = rate_limit, %% TODO: get RLModule this dynamically
+  RateLimitResults = RLModule:check(RLTag, DomainGroup),
+  {RateLimitResults, State}.
 
 checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State = #{ tries := Tried }) ->
   #domain_group{servers = Servers} = DomainGroup,
@@ -148,3 +152,5 @@ terminate(_, _, _) ->
 
 extract_id(DomainGroup) ->
     DomainGroup#domain_group.id.
+extract_hostname(DomainGroup) ->
+    DomainGroup#domain_group.hostname.
