@@ -44,22 +44,28 @@ auth(AuthInfo, Req, State) ->
   % {allow, Req, State}.
   % {deny, Req, State}.
   % {{rate_limit, "whoever"}, Req, State}.
-  % TODO: Get auth, ratelimit results based on IPorDomain
-  DomainGroup = maps:get(domain_group, State),
-  APIId = extract_id(DomainGroup),
   % TODO: Get authmodule dynamically
   AuthModule = auth_key,
-  Response = AuthModule:auth(AuthInfo, APIId),
-  {Response, Req, State}.
+  Response = AuthModule:auth(AuthInfo, State),
+  NewState = case Response of
+               {DeveloperId, UserId} when is_binary(DeveloperId), is_binary(UserId) ->
+                 S0 = maps:put(developer_id, DeveloperId, State),
+                 S1 = maps:put(user_id, UserId, S0),
+                 S1;
+               DeveloperId when is_binary(DeveloperId) ->
+                 maps:put(developer_id, DeveloperId, State);
+               deny -> State;
+               ignore_rate_limit -> State
+             end,
+  {Response, Req, NewState}.
 
 rate_limit(RLTag, _Req, State) ->
   % {allow, State}.
   % {{allow, Limit, Remaining, Reset}, State}.
   % {deny, State}.
   % {{deny, RetryAfter}, State}.
-  DomainGroup = maps:get(domain_group, State),
   RLModule = rate_limit, %% TODO: get RLModule this dynamically
-  RateLimitResults = RLModule:check(RLTag, DomainGroup),
+  RateLimitResults = RLModule:check(RLTag, State),
   {RateLimitResults, State}.
 
 checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State = #{ tries := Tried }) ->

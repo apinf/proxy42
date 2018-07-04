@@ -33,14 +33,14 @@ setup(Bucket, RateLimit, RatePeriod) ->
   {ok, _} = timer:apply_after(RatePeriod, ?MODULE, reset_counters, [Bucket, RatePeriod]),
   RLState.
 
-check(RLTag, DomainGroup) ->
-  Bucket = get_bucket(RLTag, DomainGroup),
+check(RLTag, ReqMeta) ->
+  Bucket = get_bucket(RLTag, ReqMeta),
   #rate_limit_state{limit=Limit,
                     period=Period,
                     reset_time=Reset} =
     case proxy42_plugin_storage:get(?RLSTAB, Bucket) of
       [] ->
-        SetupLimit = get_rate_limit(DomainGroup),
+        SetupLimit = get_rate_limit(ReqMeta),
         Period_=5000, % TODO: Hardcoded Period
         setup(Bucket, SetupLimit, Period_);
       [RLState] -> RLState
@@ -48,8 +48,8 @@ check(RLTag, DomainGroup) ->
   Count = proxy42_plugin_storage:increment_counter(?RLCTAB, Bucket, 1),
   rate_limit_result(Count, Limit, Reset, Period).
 
-peek(RLTag, DomainGroup) ->
-  Bucket = get_bucket(RLTag, DomainGroup),
+peek(RLTag, ReqMeta) ->
+  Bucket = get_bucket(RLTag, ReqMeta),
   case proxy42_plugin_storage:get(?RLSTAB, Bucket) of
     [] ->
       % TODO: Think this
@@ -86,6 +86,6 @@ next_reset_in(PreviousReset, Period) ->
 next_reset_ts(PreviousReset, Period) ->
   (PreviousReset + Period) div 1000.
 
-get_bucket(RLTag, DomainGroup) when is_binary(RLTag) ->
-  APIId = get_api_id(DomainGroup),
+get_bucket(RLTag, ReqMeta) when is_binary(RLTag) ->
+  APIId = get_api_id(ReqMeta),
   <<APIId/binary, ":", RLTag/binary>>.
