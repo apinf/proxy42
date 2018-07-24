@@ -4,7 +4,7 @@
 -export([handle_http/2]).
 
 -import(proxy42_authorisation, [is_authorised/2]).
--import(p42_plugin_helpers, [get_api_id/1]).
+-import(p42_req_ctx, [get_api_id/1]).
 
 -define(KEYSTAB, auth_key_developers).
 
@@ -40,9 +40,9 @@ terminate(_Reason) ->
 auth_parameters(_Config) ->
     [{header, <<"authorization">>, strip}].
 
-auth(AuthInfo, ReqMeta) ->
+auth(AuthInfo, ReqCtx) ->
   % TODO: Have reverse lookup table
-  APIId = get_api_id(ReqMeta),
+  APIId = get_api_id(ReqCtx),
   case AuthInfo of
     [{header, <<"authorization">>, undefined}] -> deny;
     [{header, <<"authorization">>, Header}] ->

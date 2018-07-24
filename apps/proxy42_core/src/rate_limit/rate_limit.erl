@@ -3,7 +3,7 @@
 -export([check/2, peek/2, setup/3, reset_counters/1]).
 
 -export([reset_counters/2]).
--import(p42_plugin_helpers, [get_rate_limit/1, get_api_id/1]).
+-import(p42_req_ctx, [get_rate_limit/1, get_api_id/1]).
 
 -define(RLSTAB, rate_limit_state).
 -define(RLCTAB, rate_limit_counter).
@@ -33,14 +33,14 @@ setup(Bucket, RateLimit, RatePeriod) ->
   {ok, _} = timer:apply_after(RatePeriod, ?MODULE, reset_counters, [Bucket, RatePeriod]),
   RLState.
 
-check(RLTag, ReqMeta) ->
-  Bucket = get_bucket(RLTag, ReqMeta),
+check(RLTag, ReqCtx) ->
+  Bucket = get_bucket(RLTag, ReqCtx),
   #rate_limit_state{limit=Limit,
                     period=Period,
                     reset_time=Reset} =
     case proxy42_plugin_storage:get(?RLSTAB, Bucket) of
       [] ->
-        SetupLimit = get_rate_limit(ReqMeta),
+        SetupLimit = get_rate_limit(ReqCtx),
         Period_=5000, % TODO: Hardcoded Period
         setup(Bucket, SetupLimit, Period_);
       [RLState] -> RLState
@@ -48,8 +48,8 @@ check(RLTag, ReqMeta) ->
   Count = proxy42_plugin_storage:increment_counter(?RLCTAB, Bucket, 1),
   rate_limit_result(Count, Limit, Reset, Period).
 
-peek(RLTag, ReqMeta) ->
-  Bucket = get_bucket(RLTag, ReqMeta),
+peek(RLTag, ReqCtx) ->
+  Bucket = get_bucket(RLTag, ReqCtx),
   case proxy42_plugin_storage:get(?RLSTAB, Bucket) of
     [] ->
       % TODO: Think this
@@ -86,6 +86,6 @@ next_reset_in(PreviousReset, Period) ->
 next_reset_ts(PreviousReset, Period) ->
   (PreviousReset + Period) div 1000.
 
-get_bucket(RLTag, ReqMeta) when is_binary(RLTag) ->
-  APIId = get_api_id(ReqMeta),
+get_bucket(RLTag, ReqCtx) when is_binary(RLTag) ->
+  APIId = get_api_id(ReqCtx),
   <<APIId/binary, ":", RLTag/binary>>.
