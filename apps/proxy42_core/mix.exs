@@ -25,7 +25,11 @@ defmodule Proxy42.Core.Mixfile do
   defp env() do
     [
       {:port, 8080},
-      {:plugins, [:auth_key]},
+      {:plugins, [
+          :p42_auth_always,
+          :p42_auth_key,
+          :p42_rl_ftbucket,
+        ]},
     ]
   end
 

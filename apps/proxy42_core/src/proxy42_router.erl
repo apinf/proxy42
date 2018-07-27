@@ -7,8 +7,7 @@
          checkout_service/3,
          checkin_service/6,
          service_backend/3,
-         auth_config/2,
-         auth/3,
+         auth/2,
          rate_limit/3,
          backend_request_params/3,
          transform_response_headers/2,
@@ -16,44 +15,46 @@
          additional_headers/4,
          error_page/4]).
 
-state() ->
-  #{
-   tries => []
-  }.
+-import(p42_req_ctx, [set_api/2, get_api/1,
+                      set_developer_id/2,
+                      set_user_id/2, get_servers/1,
+                      set_tries/2, get_tries/1,
+                      get_auth_info/1, get_rl_info/1,
+                      get_outgoing_hostname/1]).
+-import(p42_req, [get_path/1, get_method/1, get_qs/1, get_headers/1]).
+-import(p42_settings, [get_api_for/2]).
 
 % Upstream is a cowboyku request.
 init(_AcceptTime, Upstream) ->
   % RNGs require per-process seeding
   rand:seed(exs1024),
   % TODO:LOG: request init
-  {ok, Upstream, state()}.
+  {ok, Upstream, p42_req_ctx:init()}.
 
 lookup_domain_name(IncomingDomain, Upstream, State) ->
-  {Path, Req1} = cowboyku_req:path(Upstream),
+  {Path, Req1} = get_path(Upstream),
   % PathInfo is an array of binaries representing path components between /
-  {ok, DomainGroup} = proxy42_config:domain_config(IncomingDomain, Path),
-  NewState = maps:put(domain_group, DomainGroup, State),
-  {ok, DomainGroup, Req1, NewState}.
+  {ok, API} = get_api_for(IncomingDomain, Path),
+  State1 = set_api(API, State),
+  {ok, API, Req1, State1}.
 
-auth_config(Req, State) ->
-  DomainGroup = maps:get(domain_group, State),
-  Config = DomainGroup#domain_group.auth_config,
-  {Config, Req, State}.
-
-auth(AuthInfo, Req, State) ->
+auth(Req, State) ->
   % {allow, Req, State}.
   % {deny, Req, State}.
   % {{rate_limit, "whoever"}, Req, State}.
-  % TODO: Get authmodule dynamically
-  AuthModule = auth_key,
-  Response = AuthModule:auth(AuthInfo, State),
+  {PluginConfigId, AuthModule} = get_auth_info(State),
+  Response0 = (catch AuthModule:auth(PluginConfigId, Req, State)),
+  Response = case Response0 of
+               {'EXIT', _Reason} -> deny;
+               Val -> Val
+             end,
   NewState = case Response of
                {DeveloperId, UserId} when is_binary(DeveloperId), is_binary(UserId) ->
-                 S0 = maps:put(developer_id, DeveloperId, State),
-                 S1 = maps:put(user_id, UserId, S0),
+                 S0 = set_developer_id(DeveloperId, State),
+                 S1 = set_user_id(UserId, S0),
                  S1;
                DeveloperId when is_binary(DeveloperId) ->
-                 maps:put(developer_id, DeveloperId, State);
+                 set_developer_id(DeveloperId, State);
                deny -> State;
                ignore_rate_limit -> State
              end,
@@ -64,12 +65,13 @@ rate_limit(RLTag, _Req, State) ->
   % {{allow, Limit, Remaining, Reset}, State}.
   % {deny, State}.
   % {{deny, RetryAfter}, State}.
-  RLModule = rate_limit, %% TODO: get RLModule this dynamically
+  {_ConfigId, RLModule} = get_rl_info(State),
   RateLimitResults = RLModule:check(RLTag, State),
   {RateLimitResults, State}.
 
-checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State = #{ tries := Tried }) ->
-  #domain_group{servers = Servers} = DomainGroup,
+checkout_service(_API, Upstream, State) ->
+  Servers = get_servers(State),
+  Tried = get_tries(State),
   Available = Servers -- Tried,
   case Available of
     [] ->
@@ -77,7 +79,7 @@ checkout_service(DomainGroup = #domain_group{strategy = random}, Upstream, State
     _ ->
       N = rand:uniform(length(Available)),
       Pick = lists:nth(N, Available),
-      NewState = maps:put(tries, [Pick | Tried], State),
+      NewState = set_tries([Pick | Tried], State),
       {service, Pick, Upstream, NewState}
   end.
 
@@ -91,19 +93,19 @@ service_backend({http, IPorDomain, Port}, Upstream, State) ->
   {{IPorDomain, Port}, Upstream, State}.
 
 backend_request_params(Body, Upstream, State) ->
-  DomainGroup = maps:get(domain_group, State),
-  {Method, Req2} = cowboyku_req:method(Upstream),
-  {OrigPath, Req3} = cowboyku_req:path(Req2),
+  API = get_api(State),
+  {Method, Req2} = get_method(Upstream),
+  {OrigPath, Req3} = get_path(Req2),
   #domain_group{
     hostname = Host,
     frontend_prefix = FP,
     backend_prefix = BP
-  } = DomainGroup,
+  } = API,
   % Replace initial FP in incoming req path with BP
   Path = re:replace(OrigPath, ["^", FP], BP),
   Req4 = Req3,
-  {Qs, Req5} = cowboyku_req:qs(Req4),
-  {Headers, Req6} = cowboyku_req:headers(Req5),
+  {Qs, Req5} = get_qs(Req4),
+  {Headers, Req6} = get_headers(Req5),
   FullPath = case Qs of
                <<>> -> Path;
                _ -> [Path, "?", Qs]
@@ -112,9 +114,8 @@ backend_request_params(Body, Upstream, State) ->
   Params = {Method, Headers1, Body, FullPath, Host},
   {Params, Req7, State}.
 
-
-transform_response_headers(Headers, State = #{domain_group := DG}) ->
-  #domain_group{hostname = NewHost} = DG,
+transform_response_headers(Headers, State) ->
+  NewHost = get_outgoing_hostname(State),
   lists:keyreplace(<<"host">>, 1, Headers, {<<"host">>, NewHost}),
   {Headers, State}.
 
@@ -131,24 +132,24 @@ additional_headers(_Direction, _Log, _Upstream, State) ->
 
 %% Vegur-returned errors that should be handled no matter what.
 %% Full list in src/vegur_stub.erl
-error_page({upstream, _Reason}, _DomainGroup, Upstream, HandlerState) ->
+error_page({upstream, _Reason}, _API, Upstream, HandlerState) ->
   %% Blame the caller
   {{400, [], <<>>}, Upstream, HandlerState};
-error_page({downstream, _Reason}, _DomainGroup, Upstream, HandlerState) ->
+error_page({downstream, _Reason}, _API, Upstream, HandlerState) ->
   %% Blame the server
   {{500, [], <<>>}, Upstream, HandlerState};
-error_page({undefined, _Reason}, _DomainGroup, Upstream, HandlerState) ->
+error_page({undefined, _Reason}, _API, Upstream, HandlerState) ->
   %% Who knows who was to blame!
   {{500, [], <<>>}, Upstream, HandlerState};
 %% Specific error codes from middleware
-error_page(empty_host, _DomainGroup, Upstream, HandlerState) ->
+error_page(empty_host, _API, Upstream, HandlerState) ->
   {{400, [], <<>>}, Upstream, HandlerState};
-error_page(bad_request, _DomainGroup, Upstream, HandlerState) ->
+error_page(bad_request, _API, Upstream, HandlerState) ->
   {{400, [], <<>>}, Upstream, HandlerState};
-error_page(expectation_failed, _DomainGroup, Upstream, HandlerState) ->
+error_page(expectation_failed, _API, Upstream, HandlerState) ->
   {{417, [], <<>>}, Upstream, HandlerState};
 %% Catch-all
-error_page(_, _DomainGroup, Upstream, HandlerState) ->
+error_page(_, _API, Upstream, HandlerState) ->
   {{500, [], <<>>}, Upstream, HandlerState}.
 
 terminate(_, _, _) ->
@@ -156,7 +157,7 @@ terminate(_, _, _) ->
 
 % ------------------------------
 
-extract_id(DomainGroup) ->
-    DomainGroup#domain_group.id.
-extract_hostname(DomainGroup) ->
-    DomainGroup#domain_group.hostname.
+extract_id(API) ->
+    API#domain_group.id.
+extract_hostname(API) ->
+    API#domain_group.hostname.

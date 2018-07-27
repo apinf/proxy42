@@ -13,6 +13,7 @@ defmodule Proxy42.ControlApi.Plugins do
   end
 
   def get_plugin_for_slug(slug) do
+    # TODO: Create an table for indexing plugins and getting slugs. Move this to proxy42_plugins. handle_opts should create this reverse map and store it. This function should just access it.
     plugins = :proxy42_plugins.get_registered_plugins()
     slug_to_plugin_map = for {p, opts} <- plugins, into: %{}, do: {opts[:slug], p}
     slug_to_plugin_map[slug]

@@ -7,26 +7,12 @@ execute(Req, Env) ->
   Log1 = vegur_req_log:stamp(pre_auth, Log),
   Req2 = cowboyku_req:set_meta(logging, Log1, Req1),
   {InterfaceModule, HandlerState, Req3} = vegur_utils:get_interface_module(Req2),
-  % Authconfig is a list of tuples {Type, Key, Mode}
-  % Type can be header or qs (Query string)
-  % Key should be name of header or query parameter depending on Type
-  % Mode can be keep or strip, and will decide if the header or query param
-  % will be consumed by us or retained in the request.
-  {AuthConfig, Req4, HandlerState1} = InterfaceModule:auth_config(Req3, HandlerState),
-  {Strategy, StrategyConfig} = AuthConfig,
-  HeadersAndQueryParams = apply(Strategy, auth_parameters, [StrategyConfig]),
-  AuthInfoRev = lists:foldl(
-                  fun (X, Acc) -> [extract(X, Req4) | Acc] end,
-                  [],
-                  HeadersAndQueryParams),
-  AuthInfo = lists:reverse(AuthInfoRev),
-  Req5 = Req4,
-  {AuthResult, Req6, HandlerState3} = InterfaceModule:auth(AuthInfo, Req5, HandlerState1),
-  Req7 = vegur_utils:set_handler_state(HandlerState3, Req6),
+  {AuthResult, Req4, HandlerState3} = InterfaceModule:auth(Req3, HandlerState),
+  Req5 = vegur_utils:set_handler_state(HandlerState3, Req4),
   case AuthResult of
-    ignore_rate_limit -> {ok, Req7, Env};
-    deny -> {error, 403, Req7};
-    RLTag -> handle_rate_limit(RLTag, Req7, Env)
+    ignore_rate_limit -> {ok, Req5, Env};
+    deny -> {error, 403, Req5};
+    RLTag -> handle_rate_limit(RLTag, Req5, Env)
   end.
 
 
@@ -52,16 +38,6 @@ handle_rate_limit(RLTag, Req, Env) ->
       Req3 = cowboyku_req:set_resp_header(<<"Retry-After">>, RA, Req2),
       {error, 429, Req3}
   end.
-
-extract({header, Header, Mode}, Req) ->
-  {Val, _Req} =  cowboyku_req:header(Header, Req),
-  % Can be undefined
-  {header, Header, Val};
-extract({query, Param, Mode}, Req) ->
-  %% TODO handle mode
-  % Can be undefined
-  Val = cowboyku_req:qs_val(Param, Req),
-  {query, Param, Val}.
 
 str(X) when is_integer(X) -> erlang:integer_to_binary(X);
 str(X) when is_binary(X) -> X;

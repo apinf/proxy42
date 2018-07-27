@@ -169,7 +169,15 @@ defmodule Proxy42.ControlApi.Apis do
   end
 
   defp registered_auth_strategies() do
-    %{"auth_always" => :auth_always, "auth_key" => :auth_key}
+    :proxy42_plugins.get_registered_plugins
+    |> Enum.filter(
+      fn({_p,opts}) -> get_in(opts, [:strategies, :auth]) end)
+    |> Enum.into( %{},
+      fn({p,_}) ->
+        p_str = Atom.to_string(p)
+                |> String.replace_prefix("p42_", "")
+        {p_str, p}
+      end)
   end
 
   # Hoping this record doesn't change shape.

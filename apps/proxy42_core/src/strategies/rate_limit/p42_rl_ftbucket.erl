@@ -1,4 +1,4 @@
--module(rate_limit).
+-module(p42_rl_ftbucket).
 -export([init/0, terminate/1]).
 -export([check/2, peek/2, setup/3, reset_counters/1]).
 
@@ -16,7 +16,7 @@ init() ->
   RateLimitCounterTab = {?RLCTAB, record_info(fields, rate_limit_counter)},
   Opts = [
           {tables, [RateLimitStateTab, RateLimitCounterTab]},
-          {strategies, [{rate_limit , rate_limit}]}
+          {strategies, [{rate_limit , ?MODULE}]}
           ],
   timer:start(),
   {ok, Opts}.
