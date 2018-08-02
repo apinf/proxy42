@@ -22,13 +22,15 @@
                       get_auth_info/1, get_rl_info/1,
                       get_log_fn/1,
                       get_outgoing_hostname/1,
+                      set_resp_status/2,
                       apply_domain_settings/2,
                       apply_api_settings/2,
                       apply_sub_request_settings/2,
                       apply_developer_settings/2,
                       apply_app_user_settings/2,
                       get_api_id/1]).
--import(p42_req, [get_path/1, get_method/1, get_qs/1, get_headers/1]).
+-import(p42_req, [get_path/1, get_method/1, get_qs/1, get_headers/1,
+                  get_logging/1, get_req_id/1]).
 -import(p42_settings, [get_api_for/2,
                        get_settings_for_domain/1,
                        get_settings_for_api/1,
@@ -40,8 +42,9 @@
 init(_AcceptTime, Upstream) ->
   % RNGs require per-process seeding
   rand:seed(exs1024),
-  % TODO:LOG: request init
-  {ok, Upstream, p42_req_ctx:init()}.
+  ReqId = get_req_id(Upstream),
+  IncomingPeer= p42_req:incoming_peer(Upstream),
+  {ok, Upstream, p42_req_ctx:init(ReqId, IncomingPeer)}.
 
 lookup_domain_name(IncomingDomain, Upstream, State) ->
   DomainSettings = get_settings_for_domain(IncomingDomain),
@@ -180,6 +183,13 @@ error_page(expectation_failed, _API, Upstream, HandlerState) ->
 error_page(_, _API, Upstream, HandlerState) ->
   {{500, [], <<>>}, Upstream, HandlerState}.
 
-terminate(_, _, _) ->
+terminate(RespStatus, Upstream, State) ->
+  State1 = set_resp_status(RespStatus, State),
+  State2 = p42_req_ctx:set_response_code(p42_req:get_response_code(Upstream), State1),
+  LogInfo = get_logging(Upstream),
+  dispatch_logs(LogInfo, State2),
   ok.
 
+dispatch_logs(LogInfo, State) ->
+  LogFn = get_log_fn(State),
+  apply(LogFn, [LogInfo, State]).
