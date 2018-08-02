@@ -1,15 +1,15 @@
 defmodule Proxy42.Store do
-  require Proxy42.DomainGroup
-  alias Proxy42.DomainGroup, as: DG
+  require Proxy42.API
+  alias Proxy42.API, as: API
 
   def get_apis(params) do
-    DG.pattern(params)
+    API.pattern(params)
     |> :mnesia.dirty_match_object
     |> IO.inspect
   end
 
   def get_api(id) do
-    DG.pattern(id: id)
+    API.pattern(id: id)
     |> :mnesia.dirty_match_object
     |> case do
       [] -> {:error, :notfound}
@@ -27,8 +27,8 @@ defmodule Proxy42.Store do
     new_params = Map.put(params, :id, id)
     transaction(fn ->
       if is_api_unique_enough(params) do
-        DG.domain_group() # creates empty record
-        |> DG.update_domain_group(new_params)
+        API.api() # creates empty record
+        |> API.update_api(new_params)
         |> :mnesia.write
       else
         # TODO: Find a better message, include conflicting api?
@@ -48,10 +48,10 @@ defmodule Proxy42.Store do
 
   def update_api(id, params) do
     transaction(fn ->
-      case :mnesia.read(:domain_group, id, :write) do
+      case :mnesia.read(:api, id, :write) do
         [] -> :mnesia.abort("No api with id #{id}")
-        [dg] ->
-          DG.update_domain_group(dg, params)
+        [api] ->
+          API.update_api(api, params)
           |> :mnesia.write
         _ -> :mnesia.abort("EIMPOSSIBLE: Too many apis with id #{id}")
       end
@@ -60,7 +60,7 @@ defmodule Proxy42.Store do
 
   def delete_api(id) do
     transaction(fn ->
-      :mnesia.delete(:domain_group, id, :write)
+      :mnesia.delete(:api, id, :write)
     end)
   end
 
@@ -81,7 +81,7 @@ defmodule Proxy42.Store do
   end
 
   def exists?(:api, api) do
-    case :mnesia.dirty_match_object(DG.pattern(%{:id => api})) do
+    case :mnesia.dirty_match_object(API.pattern(%{:id => api})) do
       [_] -> true
       [] -> false
     end
@@ -118,7 +118,7 @@ defmodule Proxy42.Store do
   @doc false
   def is_api_unique_enough(params) do
     fp = params[:frontend_prefix]
-    :mnesia.dirty_match_object(DG.pattern(%{frontend_prefix: fp}))
+    :mnesia.dirty_match_object(API.pattern(%{frontend_prefix: fp}))
     |> case do
          [] -> true
          _ -> false

@@ -5,7 +5,7 @@ defmodule Proxy42.ControlApi.Apis do
   require Logger
 
   alias Proxy42.Store
-  alias Proxy42.DomainGroup, as: DG
+  alias Proxy42.API, as: API
 
   plug :match
   plug Plug.Parsers, parsers: [:urlencoded, :json],
@@ -17,7 +17,7 @@ defmodule Proxy42.ControlApi.Apis do
   get "/" do
     conn = fetch_query_params(conn)
     Store.get_apis(conn.query_params)
-    |> Enum.map(&DG.record_to_struct/1)
+    |> Enum.map(&API.record_to_struct/1)
     |> Poison.encode!
     |> (&send_resp(conn, 200, &1)).()
   end
@@ -33,7 +33,7 @@ defmodule Proxy42.ControlApi.Apis do
   get "/:id" do
     case Store.get_api(id) do
       {:ok, api} ->
-        api |> DG.record_to_struct |> Poison.encode! |> (&send_resp(conn, 200, &1)).()
+        api |> API.record_to_struct |> Poison.encode! |> (&send_resp(conn, 200, &1)).()
       {:error, :notfound} ->
         conn |> send_resp(404, "")
     end

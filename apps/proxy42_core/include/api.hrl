@@ -1,4 +1,4 @@
--record(domain_group, {
+-record(api, {
           id,
           hostname,
           frontend_prefix,

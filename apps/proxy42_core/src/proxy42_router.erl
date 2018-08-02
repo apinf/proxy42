@@ -1,6 +1,6 @@
 -module(proxy42_router).
 -behaviour(vegur_interface).
--include("domain_group.hrl").
+-include("api.hrl").
 -export([init/2,
          terminate/3,
          lookup_domain_name/3,
@@ -96,7 +96,7 @@ backend_request_params(Body, Upstream, State) ->
   API = get_api(State),
   {Method, Req2} = get_method(Upstream),
   {OrigPath, Req3} = get_path(Req2),
-  #domain_group{
+  #api{
     hostname = Host,
     frontend_prefix = FP,
     backend_prefix = BP
@@ -155,9 +155,3 @@ error_page(_, _API, Upstream, HandlerState) ->
 terminate(_, _, _) ->
   ok.
 
-% ------------------------------
-
-extract_id(API) ->
-    API#domain_group.id.
-extract_hostname(API) ->
-    API#domain_group.hostname.

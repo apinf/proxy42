@@ -1,10 +1,10 @@
 -module(proxy42_storage).
--include("domain_group.hrl").
+-include("api.hrl").
 -include("developers.hrl").
 -include("authorization.hrl").
 
 -export([start/0, start/2, init/0, stop/1]).
--export([find_domain_group/1, ensure_table/2]).
+-export([find_api/1, ensure_table/2]).
 
 %% announce
 -record(storage_announce, {sender, node}).
@@ -40,7 +40,7 @@ init_storage(true) ->
     wait_for_tables().
 
 create_tables() ->
-    ok = ensure_table(domain_group, [{attributes, record_info(fields, domain_group)}
+    ok = ensure_table(api, [{attributes, record_info(fields, api)}
                                        ,{type, set}
                                       ,{disc_copies, [node()]}]),
     ok = ensure_table(developer, [{attributes, record_info(fields, developer)}
@@ -62,7 +62,7 @@ ensure_table(Tab, Opts) ->
     end.
 
 wait_for_tables() ->
-    mnesia:wait_for_tables([domain_group, developer, authorization], 10000).
+    mnesia:wait_for_tables([api, developer, authorization], 10000).
 
 announce_storage_to_nodes([Node|T]) when Node =:= node() ->
     announce_storage_to_nodes(T);
@@ -90,13 +90,13 @@ copy_storage_to_node(Node) ->
     copy_tables(Node).
 
 copy_tables(Node) ->
-    _R1 = mnesia:add_table_copy(domain_group, Node, disc_copies),
+    _R1 = mnesia:add_table_copy(api, Node, disc_copies),
     _R1 = mnesia:add_table_copy(developer, Node, disc_copies),
     _R1 = mnesia:add_table_copy(authorization, Node, disc_copies).
 
 stop(_State) ->
     ok.
 
-find_domain_group(Pattern) ->
-    [DomainGroup] = mnesia:dirty_match_object(Pattern),
-    DomainGroup.
+find_api(Pattern) ->
+    [API] = mnesia:dirty_match_object(Pattern),
+    API.

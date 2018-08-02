@@ -1,46 +1,46 @@
-defmodule Proxy42.DomainGroup do
+defmodule Proxy42.API do
   # Find the header, extract record definition
-  @domain_group_hrl Path.expand("../../apps/proxy42_core/include/domain_group.hrl")
-  @domain_group Record.extract(:domain_group, from: @domain_group_hrl)
-  @domain_group_fields @domain_group |> Keyword.keys
+  @api_hrl Path.expand("../../apps/proxy42_core/include/api.hrl")
+  @api Record.extract(:api, from: @api_hrl)
+  @api_fields @api |> Keyword.keys
 
   # mark this module for recompilation when hrl changes
-  @external_resource @domain_group_hrl
+  @external_resource @api_hrl
 
   # Define record in elixir-land
   require Record
-  Record.defrecord :domain_group, @domain_group
+  Record.defrecord :api, @api
 
-  defstruct @domain_group
+  defstruct @api
 
-  def get_all_domain_group_fields() do
-    @domain_group_fields
+  def get_all_api_fields() do
+    @api_fields
   end
 
-  # This creates a "record" domain_group with all values as :_
+  # This creates a "record" api with all values as :_
   # which is precisely the match all pattern for mnesia
   def match_all_pattern() do
-    unquote({ :{}, [], [:domain_group |
-                        for { key, _ } <- @domain_group do
+    unquote({ :{}, [], [:api |
+                        for { key, _ } <- @api do
                           :_
                         end
                        ] })
   end
 
-  @type domain_group :: record(:domain_group)
-  @spec pattern(map()) :: domain_group()
+  @type api :: record(:api)
+  @spec pattern(map()) :: api()
   def pattern(params) do
     # A pattern is a record with all fields either having constraints or the
     # atom :_. So we create a match all pattern with :_ everywhere and
     # then update it with constraints from user supplied params.
     match_all = match_all_pattern()
-    update_domain_group(match_all, params)
+    update_api(match_all, params)
   end
 
   @doc """
-  Update a given domain_group record with values from kwlist params
+  Update a given api record with values from kwlist params
 
-  domain_group/{1,2} is a macro created by Record.defrecord/2. It requires
+  api/{1,2} is a macro created by Record.defrecord/2. It requires
   the second argument, a keyword list to update the record with, to have
   keys known at compile time.
 
@@ -52,51 +52,51 @@ defmodule Proxy42.DomainGroup do
   enable doing just that without having to hardcode the fields.
 
   Long story short, the following contraption generates function heads one each
-  for every valid field in the record domain_group, updating the record
+  for every valid field in the record api, updating the record
   appropriately
   """
-  def update_domain_group(dg, updates) when is_map(updates) do
-    update_domain_group(dg, Map.to_list(updates))
+  def update_api(api, updates) when is_map(updates) do
+    update_api(api, Map.to_list(updates))
   end
 
-  def update_domain_group(dg, []) do
-    dg
+  def update_api(api, []) do
+    api
   end
 
-  @domain_group_fields
+  @api_fields
   |> Enum.each(fn key ->
-    def update_domain_group(dg, [{unquote(key), val}| rest]) do
-      domain_group(dg, [{unquote(key), val}])
-      |> update_domain_group(rest)
+    def update_api(api, [{unquote(key), val}| rest]) do
+      api(api, [{unquote(key), val}])
+      |> update_api(rest)
     end
   end)
 
-  def update_domain_group(dg, [_| rest]) do
-    update_domain_group(dg, rest)
+  def update_api(api, [_| rest]) do
+    update_api(api, rest)
   end
 
   @doc false
   def struct_to_record(unquote({ :%, [], [{ :__MODULE__, [], nil },
                                           { :%{}, [],
-                                            for { key, _ } <- @domain_group do
+                                            for { key, _ } <- @api do
                                               { key, { key, [], nil } }
                                             end
                                           }] })) do
-    unquote({ :{}, [], [:domain_group |
-                        for { key, _ } <- @domain_group do
+    unquote({ :{}, [], [:api |
+                        for { key, _ } <- @api do
                           { key, [], nil }
                         end
                        ] })
   end
 
-  def record_to_struct(unquote({ :{}, [], [:domain_group |
-                                           for { key, _ } <- @domain_group do
+  def record_to_struct(unquote({ :{}, [], [:api |
+                                           for { key, _ } <- @api do
                                              { key, [], nil }
                                            end
                                           ] })) do
     unquote({ :%, [], [{ :__MODULE__, [], nil },
                        { :%{}, [],
-                         for { key, _ } <- @domain_group do
+                         for { key, _ } <- @api do
                            { key, { key, [], nil } }
                          end
                        }] })
@@ -105,17 +105,17 @@ defmodule Proxy42.DomainGroup do
 
 end
 
-defimpl Poison.Encoder, for: Proxy42.DomainGroup do
-  @domain_group_fields Proxy42.DomainGroup.get_all_domain_group_fields
-  @mod Proxy42.DomainGroup
+defimpl Poison.Encoder, for: Proxy42.API do
+  @api_fields Proxy42.API.get_all_api_fields
+  @mod Proxy42.API
 
   def encode(unquote({ :%, [], [@mod,
                                 { :%{}, [],
-                                  for key <- @domain_group_fields do
+                                  for key <- @api_fields do
                                     { key, { key, [], nil } }
                                   end
                                 }] }), options \\ []) do
-    # Macro magic allows any key of DG to be used as a variable
+    # Macro magic allows any key of API to be used as a variable
     # directly. Accessing it will give actual value and updating it
     # will modify json representation
     servers = for {proto, host, port} <- servers do
@@ -126,7 +126,7 @@ defimpl Poison.Encoder, for: Proxy42.DomainGroup do
     auth_config = %{strategy: auth_strategy, params: params}
 
     updated_struct_as_map = unquote({ :%{}, [],
-                               for key <- @domain_group_fields do
+                               for key <- @api_fields do
                                  { key, { key, [], nil } }
                                end
                              })

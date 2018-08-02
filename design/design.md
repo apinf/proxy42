@@ -40,7 +40,7 @@ For large enterprises, administrators might manage a number of API proxies on be
 
 # API Proxy<a id="sec-6"></a>
 
-This is currently called a domain group in our source, that terminology being adapted from vegur, a reverse proxy that we build upon. An API Proxy connects one(or more?) API to a set of routing rules, and a set of policies.
+This was called a domain group in our source, that terminology being adapted from vegur, a reverse proxy that we build upon. An API Proxy connects one(or more?) API to a set of routing rules, and a set of policies.
 
 ## Routing Rules<a id="sec-6-1"></a>
 

@@ -1,6 +1,6 @@
 -module(p42_req_ctx).
 -compile([export_all]).
--include("domain_group.hrl").
+-include("api.hrl").
 
 -define(G(Key), maps:get(Key, ReqCtx)).
 -define(S(Key,Val), maps:put(Key, Val, ReqCtx)).
@@ -28,18 +28,18 @@ get_tries(ReqCtx) -> ?G(tries).
 
 get_servers(ReqCtx) ->
   API = get_api(ReqCtx),
-  API#domain_group.servers.
+  API#api.servers.
 
 get_outgoing_hostname(_ReqCtx) ->
   todo. % TODO
 
 get_rate_limit(ReqCtx) ->
   API = get_api(ReqCtx),
-  API#domain_group.rate_limit.
+  API#api.rate_limit.
 
 get_api_id(ReqCtx) ->
-  DomainGroup = get_api(ReqCtx),
-  DomainGroup#domain_group.id.
+  API = get_api(ReqCtx),
+  API#api.id.
 
 get_auth_info(_ReqCtx) ->
   %% TODO: do this properly
