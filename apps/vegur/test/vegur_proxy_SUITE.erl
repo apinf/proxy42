@@ -279,7 +279,7 @@ via(Config) ->
     {ok, {{_, 204, _}, _, _}} = httpc:request(get, {Url, [{"host", "localhost"}]}, [], []),
     receive
         {req, Req} ->
-            {<<"1.1 vegur">>, _} = cowboyku_req:header(<<"via">>, Req)
+            {<<"1.1 proxy42">>, _} = cowboyku_req:header(<<"via">>, Req)
     after 5000 ->
             throw(timeout)
     end,
@@ -287,7 +287,7 @@ via(Config) ->
                                                           {"via", "happyproxy"}]}, [], []),
     receive
         {req, Req1} ->
-            {<<"happyproxy, 1.1 vegur">>, _} = cowboyku_req:header(<<"via">>, Req1)
+            {<<"happyproxy, 1.1 proxy42">>, _} = cowboyku_req:header(<<"via">>, Req1)
     after 5000 ->
             throw(timeout)
     end,

@@ -96,8 +96,8 @@ parse_header(Key, Req) ->
 %% @doc adds a given header when not present, otherwise appends the header
 %% value to the end of the header list, and uses the HTTP's comma-separated
 %% header values to keep everything present. For exmaple, appending
-%% 'via: 1.1 vegur' to an existing 'via: 1.1 example' would yield
-%% 'via: 1.1 example, 1.1 vegur'
+%% 'via: 1.1 proxy42' to an existing 'via: 1.1 example' would yield
+%% 'via: 1.1 example, 1.1 proxy42'
 -spec add_or_append_header(Key, Value, Headers) -> Headers when
       Key :: iodata(),
       Value :: iodata(),
@@ -334,4 +334,4 @@ config(Key) ->
 
 -spec get_via_value() -> binary().
 get_via_value() ->
-    <<"1.1 vegur">>.
+    <<"1.1 proxy42">>.

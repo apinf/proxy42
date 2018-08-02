@@ -863,8 +863,8 @@ via(Config) ->
     ok = gen_tcp:send(Server, Resp),
     {ok, RecvClient} = gen_tcp:recv(Client, 0, 1000),
     %% Final response checking
-    {match,_} = re:run(RecvServ, "^via: ?1.1 vegur", [global,multiline,caseless]),
-    {match,_} = re:run(RecvClient, "^via: ?1.1 vegur", [global,multiline,caseless]).
+    {match,_} = re:run(RecvServ, "^via: ?1.1 proxy42", [global,multiline,caseless]),
+    {match,_} = re:run(RecvClient, "^via: ?1.1 proxy42", [global,multiline,caseless]).
 
 via_chain(Config) ->
     %% A Proxy should advertise its presence with the 'via'
@@ -886,8 +886,8 @@ via_chain(Config) ->
     ok = gen_tcp:send(Server, Resp),
     {ok, RecvClient} = gen_tcp:recv(Client, 0, 1000),
     %% Final response checking
-    {match,_} = re:run(RecvServ, "^via: ?1.1 proxy, 1.1 vegur", [global,multiline,caseless]),
-    {match,_} = re:run(RecvClient, "^via: ?1.1 proxy, 1.1 vegur", [global,multiline,caseless]).
+    {match,_} = re:run(RecvServ, "^via: ?1.1 proxy, 1.1 proxy42", [global,multiline,caseless]),
+    {match,_} = re:run(RecvClient, "^via: ?1.1 proxy, 1.1 proxy42", [global,multiline,caseless]).
 
 bad_status(Config) ->
     %% An endpoint app may send custom HTTP Statuses as long as they are
