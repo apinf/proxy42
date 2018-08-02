@@ -18,7 +18,7 @@ defmodule Proxy42.Core.Mixfile do
 
   defp deps do
     [
-      {:vegur, github: "heroku/vegur"},
+      {:vegur, in_umbrella: true},
     ]
   end
 

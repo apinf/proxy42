@@ -1,0 +1,13 @@
+*~
+*.beam
+.gitignore
+c_src/*.o
+.eunit/*
+.#*
+*.swp
+*.swo
+.rebar/
+erl_crash.dump
+_build/
+erln8.config
+edoc/

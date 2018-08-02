@@ -1,0 +1,21 @@
+sudo: false
+language: erlang
+before_install:
+- ssh-keyscan git.herokai.com >> ~/.ssh/known_hosts
+cache:
+  directories:
+  - $HOME/.cache/rebar3/
+install: "true" # don't let travis run get-deps
+script: "./rebar3 do update, ct, dialyzer"
+otp_release:
+- 19.1
+- 18.3
+notifications:
+  email: false
+  hipchat:
+    rooms:
+      secure: BLXYJZw811UmSpCM70+kAoNI8bNjO6IGaL1dwriAzbRk5mz7LjQ2uJG/rFN57dMFAb8/xSoXzpGypJI8LJpl5JtJQMS9Vypvh9U7NbRqzNnwk/T7ti6lSM0p7a/z78DMekEMzupbiNY3rSs343jAt4fO8H1t4OIN9YyzDaiKz7Y=
+    template:
+    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}
+      (<a href="%{build_url}">Details</a> | <a href="%{compare_url}">Change view</a>)'
+    format: html

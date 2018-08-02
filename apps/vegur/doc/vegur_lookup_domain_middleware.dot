@@ -1,0 +1,13 @@
+digraph vegur_lookup_domain_middleware {
+        request [shape=Mdiamond];
+        execute [label="execute/2"]
+        request -> execute;
+        execute -> lookup_domain_name [label="lookup_domain_name/3"];
+        lookup_domain_name -> handle_error [label="{error, Reason, Req3, HandlerState1}"];
+        lookup_domain_name -> handle_error [label="{redirect, Reason, DomainGroup, Domain, Req3, HandlerState1}"];
+        lookup_domain_name -> set_request_meta [label="{ok, DomainGroup, Req3, HandlerState1}"];
+        set_request_meta -> continue;
+        handle_error -> end;
+        continue [shape=cds];
+        end [shape=Msquare];
+}

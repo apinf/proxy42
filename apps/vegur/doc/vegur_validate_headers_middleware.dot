@@ -1,0 +1,14 @@
+digraph vegur_validate_headers_middleware {
+        request [shape=Mdiamond];
+        execute [label="execute/2"]
+        request -> execute;
+        execute -> validate_host;
+        validate_host -> response_error [label="Empty host"];
+        
+        validate_host -> validate_content_length [label="Has host"];
+        validate_content_length -> continue [label="No mismatching or invalid content-length header"];
+        validate_content_length -> response_error [label="Mismatching or invalid content-length headers"];
+        response_error -> end;
+        continue [shape=cds];
+        end [shape=Msquare];
+}

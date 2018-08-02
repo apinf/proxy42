@@ -1,0 +1,17 @@
+digraph vegur_lookup_service_middleware {
+        request [shape=Mdiamond];
+        execute [label="execute/2"]
+        request -> execute;
+        execute -> lookup_service;
+
+        lookup_service -> checkout_service [label="checkout_serice/3"];
+        checkout_service -> handle_service [label="{service, Service, Req2, HandlerState1}"];
+        checkout_service -> handle_error [label="{error, CheckoutError, Req2, HandlerState1}"];
+        handle_error -> end;
+        handle_service -> connect_to_backend;
+        connect_to_backend -> set_request_meta [label="Connection successful"];
+        set_request_meta -> continue;
+        connect_to_backend -> lookup_service [label="Unable to connect"];
+        continue [shape=cds];
+        end [shape=Msquare];
+}
