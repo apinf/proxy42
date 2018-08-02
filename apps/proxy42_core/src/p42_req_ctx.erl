@@ -11,6 +11,22 @@ init() ->
     tries => []
    }.
 
+apply_domain_settings(DomSettings, ReqCtx) ->
+  %% TODO
+  ReqCtx.
+apply_api_settings(APISettings, ReqCtx) ->
+  %% TODO
+  ReqCtx.
+apply_sub_request_settings(SubReqSettings, ReqCtx) ->
+  %% TODO
+  ReqCtx.
+apply_developer_settings(DevSettings, ReqCtx) ->
+  %% TODO
+  ReqCtx.
+apply_app_user_settings(AppUserSettings, ReqCtx) ->
+  %% TODO
+  ReqCtx.
+
 set_domain(Domain, ReqCtx) -> ?S(domain, Domain).
 get_domain(ReqCtx) -> ?G(domain).
 

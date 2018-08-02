@@ -20,9 +20,21 @@
                       set_user_id/2, get_servers/1,
                       set_tries/2, get_tries/1,
                       get_auth_info/1, get_rl_info/1,
-                      get_outgoing_hostname/1]).
+                      get_log_fn/1,
+                      get_outgoing_hostname/1,
+                      apply_domain_settings/2,
+                      apply_api_settings/2,
+                      apply_sub_request_settings/2,
+                      apply_developer_settings/2,
+                      apply_app_user_settings/2,
+                      get_api_id/1]).
 -import(p42_req, [get_path/1, get_method/1, get_qs/1, get_headers/1]).
--import(p42_settings, [get_api_for/2]).
+-import(p42_settings, [get_api_for/2,
+                       get_settings_for_domain/1,
+                       get_settings_for_api/1,
+                       get_settings_for_developer/1,
+                       get_settings_for_app_user/1,
+                       get_settings_for_request/2]).
 
 % Upstream is a cowboyku request.
 init(_AcceptTime, Upstream) ->
@@ -32,11 +44,20 @@ init(_AcceptTime, Upstream) ->
   {ok, Upstream, p42_req_ctx:init()}.
 
 lookup_domain_name(IncomingDomain, Upstream, State) ->
+  DomainSettings = get_settings_for_domain(IncomingDomain),
+  State1 = apply_domain_settings(DomainSettings, State),
   {Path, Req1} = get_path(Upstream),
-  % PathInfo is an array of binaries representing path components between /
+  %% PathInfo is an array of binaries representing path components between /
+  %% TODO: Get rid of API and only return APIId
   {ok, API} = get_api_for(IncomingDomain, Path),
-  State1 = set_api(API, State),
-  {ok, API, Req1, State1}.
+  State2 = set_api(API, State1),
+
+  APIId = get_api_id(State2),
+  APISettings = get_settings_for_api(APIId),
+  State3 = apply_api_settings(APISettings, State2),
+  SReqSettings = get_settings_for_request(Upstream, State3),
+  State4 = apply_sub_request_settings(SReqSettings, State3),
+  {ok, API, Req1, State4}.
 
 auth(Req, State) ->
   % {allow, Req, State}.
@@ -52,9 +73,16 @@ auth(Req, State) ->
                {DeveloperId, UserId} when is_binary(DeveloperId), is_binary(UserId) ->
                  S0 = set_developer_id(DeveloperId, State),
                  S1 = set_user_id(UserId, S0),
-                 S1;
+                 DevSettings = get_settings_for_developer(DeveloperId),
+                 UserSettings = get_settings_for_app_user(UserId),
+                 S2 = apply_developer_settings(DevSettings, S1),
+                 S3 = apply_app_user_settings(UserSettings, S2),
+                 S3;
                DeveloperId when is_binary(DeveloperId) ->
-                 set_developer_id(DeveloperId, State);
+                 S0 = set_developer_id(DeveloperId, State),
+                 DevSettings = get_settings_for_developer(DeveloperId),
+                 S1 = apply_developer_settings(DevSettings, S0),
+                 S1;
                deny -> State;
                ignore_rate_limit -> State
              end,

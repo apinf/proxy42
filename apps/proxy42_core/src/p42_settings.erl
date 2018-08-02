@@ -1,6 +1,6 @@
 -module(p42_settings).
--export([get_api_for/2]).
 -include("api.hrl").
+-compile([export_all]).
 
 %% @doc
 %% Find the domain config based on incoming domain and path.
@@ -23,4 +23,6 @@ get_settings_for_api(ApiID) ->
 get_settings_for_developer(DeveloperId) ->
   todo.
 get_settings_for_app_user(UserId) ->
+  todo.
+get_settings_for_request(Req, ReqCtx) ->
   todo.
