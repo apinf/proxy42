@@ -6,7 +6,9 @@ defmodule Proxy42.ControlApi.Application do
   def start(_type, _args) do
     children = [
       # Define workers and child supervisors to be supervised
-      Plug.Adapters.Cowboy.child_spec(:http, Proxy42.ControlApi.Router, [], [port: 4001])
+      Plug.Adapters.Cowboy.child_spec(:http, Proxy42.ControlApi.Router,
+        [],
+        [port: Application.get_env(:proxy42_control_api, :port)])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
