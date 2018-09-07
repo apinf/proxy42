@@ -20,7 +20,7 @@ erl_crash.dump
 *.ez
 
 # Ignore Mnesia db folder
-/Mnesia*
+Mnesia*
 build
 .rebar3
 apps/vegur/ebin
