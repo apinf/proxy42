@@ -8,6 +8,7 @@ use Mix.Config
 # configure all applications here, we prefer to delegate
 # back to each application for organization purposes.
 import_config "../apps/*/config/config.exs"
+import_config "#{Mix.env}.exs"
 
 # Sample configuration (overrides the imported configuration above):
 #
@@ -17,3 +18,7 @@ config :logger, :console,
 #       metadata: [:user_id]
 
 config :mix_docker, image: "apinf/proxy42"
+
+config :p42_log_plugin_es,
+  # es_url: "http://hap.cinfra.fi:9200/proxy42/logs/_bulk"
+  es_url: "http://localhost:9200/proxy42/logs/_bulk"
