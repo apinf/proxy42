@@ -20,9 +20,10 @@
                       set_user_id/2, get_servers/1,
                       set_tries/2, get_tries/1,
                       get_auth_info/1, get_rl_info/1,
-                      get_log_fn/1,
+                      get_log_strategy/1,
                       get_outgoing_hostname/1,
                       set_resp_status/2,
+                      set_domain/2,
                       apply_domain_settings/2,
                       apply_api_settings/2,
                       apply_sub_request_settings/2,
@@ -30,7 +31,7 @@
                       apply_app_user_settings/2,
                       get_api_id/1]).
 -import(p42_req, [get_path/1, get_method/1, get_qs/1, get_headers/1,
-                  get_logging/1, get_req_id/1]).
+                  get_logging/1]).
 -import(p42_settings, [get_api_for/2,
                        get_settings_for_domain/1,
                        get_settings_for_api/1,
@@ -38,30 +39,51 @@
                        get_settings_for_app_user/1,
                        get_settings_for_request/2]).
 
-% Upstream is a cowboyku request.
+-type router_state() :: p42_req_ctx:req_ctx().
+-type req() :: p42_req:req().
+-type req_params() :: {p42_req:method(),
+                       p42_req:headers(),
+                       p42_req:body(),
+                       p42_req:path(),
+                       cowboyku_req:host()}.
+-type auth_response() :: {p42_req_ctx:developer_id(), p42_req_ctx:user_id()}
+                        | p42_req_ctx:developer_id()
+                        | deny
+                        | ignore_rate_limit.
+-type rltag() :: atom().
+-type rl_results() :: {allow, non_neg_integer(), non_neg_integer(), non_neg_integer()}
+                    | {deny, non_neg_integer()}.
+-export_type([rltag/0, rl_results/0]).
+
+-spec init(erlang:timestamp(), req()) ->
+              {ok, req(), router_state()}.
 init(_AcceptTime, Upstream) ->
   % RNGs require per-process seeding
   rand:seed(exs1024),
-  ReqId = get_req_id(Upstream),
-  IncomingPeer= p42_req:incoming_peer(Upstream),
-  {ok, Upstream, p42_req_ctx:init(ReqId, IncomingPeer)}.
+  {ok, Upstream, p42_req_ctx:init(Upstream)}.
 
+-spec lookup_domain_name(hostname(), req(), router_state()) ->
+                            {ok, api(), req(), router_state()}.
 lookup_domain_name(IncomingDomain, Upstream, State) ->
   DomainSettings = get_settings_for_domain(IncomingDomain),
   State1 = apply_domain_settings(DomainSettings, State),
-  {Path, Req1} = get_path(Upstream),
+  State2 = set_domain(IncomingDomain, State1),
+  Path = get_path(Upstream),
   %% PathInfo is an array of binaries representing path components between /
   %% TODO: Get rid of API and only return APIId
   {ok, API} = get_api_for(IncomingDomain, Path),
-  State2 = set_api(API, State1),
+  State3 = set_api(API, State2),
 
-  APIId = get_api_id(State2),
+  APIId = get_api_id(State3),
   APISettings = get_settings_for_api(APIId),
-  State3 = apply_api_settings(APISettings, State2),
-  SReqSettings = get_settings_for_request(Upstream, State3),
-  State4 = apply_sub_request_settings(SReqSettings, State3),
-  {ok, API, Req1, State4}.
+  State4 = apply_api_settings(APISettings, State3),
+  SReqSettings = get_settings_for_request(Upstream, State4),
+  State5 = apply_sub_request_settings(SReqSettings, State4),
+  {ok, API, Upstream, State5}.
 
+-spec auth(req(), router_state()) -> {auth_response(),
+                                      req(),
+                                      router_state()}.
 auth(Req, State) ->
   % {allow, Req, State}.
   % {deny, Req, State}.
@@ -91,6 +113,7 @@ auth(Req, State) ->
              end,
   {Response, Req, NewState}.
 
+-spec rate_limit(rltag(), req(), router_state()) -> {rl_results(), router_state()}.
 rate_limit(RLTag, _Req, State) ->
   % {allow, State}.
   % {{allow, Limit, Remaining, Reset}, State}.
@@ -100,6 +123,9 @@ rate_limit(RLTag, _Req, State) ->
   RateLimitResults = RLModule:check(RLTag, State),
   {RateLimitResults, State}.
 
+-spec checkout_service(api(), req(), router_state()) ->
+                          {error, all_blocked, req(), router_state()} |
+                          {service, binary(), req(), router_state()}.
 checkout_service(_API, Upstream, State) ->
   Servers = get_servers(State),
   Tried = get_tries(State),
@@ -114,6 +140,10 @@ checkout_service(_API, Upstream, State) ->
       {service, Pick, Upstream, NewState}
   end.
 
+-spec service_backend({http, inet:ip_address() | inet:hostname(), inet:port_number()},
+                      req(), router_state()) ->
+                         {{inet:ip_address() | inet:hostname(), inet:port_number()},
+                          req(), router_state()}.
 service_backend({http, IPorDomain, Port}, Upstream, State) ->
   %% extract the IP:PORT from the chosen server.
   %% To enable keep-alive, use:
@@ -123,10 +153,12 @@ service_backend({http, IPorDomain, Port}, Upstream, State) ->
   %% Otherwise, no keepalive is done to the back-end:
   {{IPorDomain, Port}, Upstream, State}.
 
+-spec backend_request_params(p42_req:body(), req(), router_state()) ->
+                                {req_params(), req(), router_state()}.
 backend_request_params(Body, Upstream, State) ->
   API = get_api(State),
-  {Method, Req2} = get_method(Upstream),
-  {OrigPath, Req3} = get_path(Req2),
+  Method = get_method(Upstream),
+  OrigPath = get_path(Upstream),
   #api{
     hostname = Host,
     frontend_prefix = FP,
@@ -134,16 +166,15 @@ backend_request_params(Body, Upstream, State) ->
   } = API,
   % Replace initial FP in incoming req path with BP
   Path = re:replace(OrigPath, ["^", FP], BP),
-  Req4 = Req3,
-  {Qs, Req5} = get_qs(Req4),
-  {Headers, Req6} = get_headers(Req5),
+  Qs = get_qs(Upstream),
+  Headers = get_headers(Upstream),
   FullPath = case Qs of
                <<>> -> Path;
                _ -> [Path, "?", Qs]
              end,
-  {Headers1, Req7} = vegur_proxy42_middleware:add_proxy_headers(Headers, Req6),
+  {Headers1, Req} = vegur_proxy42_middleware:add_proxy_headers(Headers, Upstream),
   Params = {Method, Headers1, Body, FullPath, Host},
-  {Params, Req7, State}.
+  {Params, Req, State}.
 
 transform_response_headers(Headers, State) ->
   NewHost = get_outgoing_hostname(State),
@@ -191,5 +222,5 @@ terminate(RespStatus, Upstream, State) ->
   ok.
 
 dispatch_logs(LogInfo, State) ->
-  LogFn = get_log_fn(State),
-  apply(LogFn, [LogInfo, State]).
+  LogMod = get_log_strategy(State),
+  LogMod:log(LogInfo, State).
