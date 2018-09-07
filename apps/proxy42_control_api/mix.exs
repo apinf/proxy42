@@ -39,7 +39,7 @@ defmodule Proxy42.ControlApi.Mixfile do
       {:cowboy, "~>1.0.0"},
       {:plug, "~> 1.0"},
       {:poison, "~>3.0"},
-      {:uuid, "~>1.7.3", hex: "uuid_erl"},
+      {:uuid, "~>1.5.1.1", hex: "uuid_erl"},
       {:proxy42_core, in_umbrella: true, runtime: false},
     ]
   end
