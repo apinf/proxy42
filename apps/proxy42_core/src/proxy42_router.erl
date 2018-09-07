@@ -147,8 +147,8 @@ backend_request_params(Body, Upstream, State) ->
 
 transform_response_headers(Headers, State) ->
   NewHost = get_outgoing_hostname(State),
-  lists:keyreplace(<<"host">>, 1, Headers, {<<"host">>, NewHost}),
-  {Headers, State}.
+  NewHeaders = lists:keyreplace(<<"host">>, 1, Headers, {<<"host">>, NewHost}),
+  {NewHeaders, State}.
 
 checkin_service(_Servers, _Pick, _Phase, _ServState, Upstream, State) ->
   %% if we tracked total connections, we would decrement the counters here
