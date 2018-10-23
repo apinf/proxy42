@@ -88,4 +88,8 @@ next_reset_ts(PreviousReset, Period) ->
 
 get_bucket(RLTag, ReqCtx) when is_binary(RLTag) ->
   APIId = get_api_id(ReqCtx),
-  <<APIId/binary, ":", RLTag/binary>>.
+  <<APIId/binary, ":", RLTag/binary>>;
+get_bucket({DevId, _UserId}, ReqCtx) ->
+  %% TODO: Change to get buckets. Count buckets per user. When finding limit of developer include all their users.
+  APIId = get_api_id(ReqCtx),
+  <<APIId/binary, ":", DevId/binary>>.

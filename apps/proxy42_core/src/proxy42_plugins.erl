@@ -64,5 +64,5 @@ handle_opts([{tables, Tabs}| Rest]) ->
 handle_opts([_ | X]) ->
     handle_opts(X).
 
-% TODO: Register slug, register strategies, handle sup tree, get rid of catch all.
+% TODO: Register slug, register strategies, get rid of catch all.
 % Unknown opts must cause a crash.
