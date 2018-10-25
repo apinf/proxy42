@@ -2,7 +2,7 @@ defmodule Proxy42.Umbrella.Mixfile do
   use Mix.Project
 
   def project do
-    [apps: [:proxy42, :p42_log_plugin_es],
+    [apps: [:proxy42 | plugin_apps()],
      apps_path: "apps",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -14,5 +14,9 @@ defmodule Proxy42.Umbrella.Mixfile do
       {:recon, ">= 2.3.0"},
       {:mix_docker, "~> 0.5.0"},
     ]
+  end
+
+  defp plugin_apps() do
+    [:p42_log_plugin_es, :p42_oauth]
   end
 end

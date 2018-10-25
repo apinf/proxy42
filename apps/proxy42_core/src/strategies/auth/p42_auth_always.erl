@@ -2,7 +2,7 @@
 -export([init/0, terminate/1, auth/3]).
 
 init() ->
-  Opts = [{strategies, [{auth, ?MODULE}]}],
+  Opts = [{strategies, [{auth, <<"auth_always">>, ?MODULE}]}],
   {ok, Opts}.
 
 terminate(_Reason) ->

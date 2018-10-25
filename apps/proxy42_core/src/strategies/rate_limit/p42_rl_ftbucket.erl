@@ -16,7 +16,7 @@ init() ->
   RateLimitCounterTab = {?RLCTAB, record_info(fields, rate_limit_counter)},
   Opts = [
           {tables, [RateLimitStateTab, RateLimitCounterTab]},
-          {strategies, [{rate_limit , ?MODULE}]}
+          {strategies, [{rate_limit , <<"rl_bucket">>, ?MODULE}]}
           ],
   timer:start(),
   {ok, Opts}.

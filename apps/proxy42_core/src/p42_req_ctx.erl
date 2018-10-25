@@ -1,3 +1,4 @@
+
 -module(p42_req_ctx).
 -compile([export_all]).
 -include("api.hrl").
@@ -132,11 +133,20 @@ get_api_id(ReqCtx) ->
   API#api.id.
 
 -spec get_auth_info(req_ctx()) -> auth_info().
-get_auth_info(_ReqCtx) ->
-  %% TODO: do this properly
-  %% TODO: Get authmodule dynamically
+get_auth_info(ReqCtx) ->
   %% alias/ConfigId, module
-  {<<"bearer-auth">>, p42_auth_key}.
+  %%{<<"bearer-auth">>, p42_auth_key}.
+  API = get_api(ReqCtx),
+  AuthConfig = API#api.auth_config,
+  {AuthStrategy, ConfigId} = AuthConfig,
+  %% AuthModule = get_module_for_auth_strategy(AuthStrategy),
+  AuthModule=AuthStrategy,
+  {ConfigId, AuthModule}.
+
+%% TODO: cleanup
+get_module_for_auth_strategy(S) ->
+  AuthRegistry = 'Elixir.Proxy42.ControlApi.Apis':registered_auth_strategies(),
+  maps:find(S, AuthRegistry).
 
 -spec get_rl_info(req_ctx()) -> rl_info().
 get_rl_info(_ReqCtx) ->

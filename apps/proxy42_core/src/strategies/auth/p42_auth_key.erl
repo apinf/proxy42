@@ -13,12 +13,12 @@
 
 init() ->
   %% {sup, pid} is the supervision tree of plugin if it exists.
-  %% {strategies, [{strategy_type, strategy_name}]}
+  %% {strategies, [{strategy_type, strategy_name, strategy_module}]}
   %% slug, string | binary
   %% tables, [{tablename, attributes}]
   KeysTab = {?KEYSTAB, [key, developer_id]},
   Opts = [
-          {strategies, [{auth, ?MODULE}]},
+          {strategies, [{auth, <<"auth_key">>, ?MODULE}]},
           {slug, <<"auth_key">>},
           {tables, [KeysTab]}
           ],

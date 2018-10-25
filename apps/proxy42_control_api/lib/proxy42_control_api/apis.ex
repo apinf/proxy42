@@ -132,17 +132,17 @@ defmodule Proxy42.ControlApi.Apis do
   defp validate_and_transform({:auth_config, auth_config})
   when is_map(auth_config) do
     auth_strategy = auth_config["strategy"]
-    params = Map.get(auth_config, "params", [])
+    config_id = Map.get(auth_config, "config_id", "")
     allowed_strategies = registered_auth_strategies()
     if Map.has_key?(allowed_strategies, auth_strategy) do
-      {:ok, {allowed_strategies[auth_strategy], params}}
+      {:ok, {allowed_strategies[auth_strategy], config_id}}
     else
       {:error, "Unrecognised authentication strategy #{auth_strategy}"}
     end
   end
   defp validate_and_transform({:auth_config, auth_config})
   when is_binary(auth_config) do
-    validate_and_transform({:auth_config, %{"strategy" => auth_config, "params" => []}})
+    validate_and_transform({:auth_config, %{"strategy" => auth_config, "config_id" => ""}})
   end
 
   defp validate_and_transform({:strategy, "random"}), do: {:ok, :random}
@@ -168,16 +168,12 @@ defmodule Proxy42.ControlApi.Apis do
     do: {proto, host, port}
   end
 
-  defp registered_auth_strategies() do
+  # TODO: move elsewhere
+  def registered_auth_strategies() do
     :proxy42_plugins.get_registered_plugins
-    |> Enum.filter(
-      fn({_p,opts}) -> get_in(opts, [:strategies, :auth]) end)
-    |> Enum.into( %{},
-      fn({p,_}) ->
-        p_str = Atom.to_string(p)
-                |> String.replace_prefix("p42_", "")
-        {p_str, p}
-      end)
+    |> Enum.flat_map(fn({_p, opts}) -> Enum.map(opts[:strategies], fn({:auth, name, mod}) -> {name, mod}; _ -> nil end) end)
+    |> Enum.filter(&(&1)) # filter nils
+    |> Enum.into(%{})
   end
 
   # Hoping this record doesn't change shape.
