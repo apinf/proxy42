@@ -41,6 +41,7 @@ defmodule Proxy42.ControlApi.Mixfile do
       {:poison, "~>3.0"},
       {:uuid, "~>1.5.1.1", hex: "uuid_erl"},
       {:proxy42_core, in_umbrella: true, runtime: false},
+      {:corsica, "~> 1.0"},
     ]
   end
 end

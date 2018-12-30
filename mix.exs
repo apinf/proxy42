@@ -17,6 +17,6 @@ defmodule Proxy42.Umbrella.Mixfile do
   end
 
   defp plugin_apps() do
-    [:p42_log_plugin_es, :p42_oauth]
+    [:p42_log_plugin_es, :p42_oauth, :p42_admin]
   end
 end

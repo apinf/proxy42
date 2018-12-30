@@ -11,6 +11,9 @@ defmodule Proxy42.ControlApi.Apis do
   plug Plug.Parsers, parsers: [:urlencoded, :json],
     pass:  ["application/x-www-form-urlencoded", "application/json"],
     json_decoder: Poison
+  plug Corsica, origins: "*",
+    log: [rejected: :info, invalid: :info, accepted: :info],
+    allow_headers: ["accept", "content-type"]
   plug :validate_and_transform
   plug :dispatch
 
