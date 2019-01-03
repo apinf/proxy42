@@ -1,0 +1,5 @@
+{
+  "EDIT_API": "/apis/:id/edit",
+  "NEW_API": "/apis/new",
+  "LIST_APIS": "/apis/"
+}

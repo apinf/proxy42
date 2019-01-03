@@ -44,7 +44,8 @@ defmodule P42Admin.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 1.0"}, ## XXX: 2.0 is the recommendation    ]
+      {:plug_cowboy, "~> 1.0"}, ## XXX: 2.0 is the recommendation
+    ]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

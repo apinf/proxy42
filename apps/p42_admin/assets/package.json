@@ -18,7 +18,7 @@
     "polished": "^2.3.1",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
-    "react-redux": "^6.0.0",
+    "react-router-dom": "^4.3.1",
     "redux": "^4.0.1",
     "redux-form": "^8.0.4",
     "redux-thunk": "^2.3.0",
@@ -26,9 +26,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.2.3",
     "@babel/plugin-transform-async-to-generator": "^7.1.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
+    "@hot-loader/react-dom": "^16.7.0",
     "@storybook/addon-actions": "^4.0.11",
     "@storybook/addon-links": "^4.0.11",
     "@storybook/addons": "^4.0.11",
@@ -38,9 +40,12 @@
     "css-loader": "^0.28.10",
     "mini-css-extract-plugin": "^0.4.0",
     "optimize-css-assets-webpack-plugin": "^4.0.0",
+    "react-hot-loader": "^4.6.3",
+    "react-redux": "^6.0.0",
     "redux-devtools": "^3.4.2",
     "uglifyjs-webpack-plugin": "^1.2.4",
     "webpack": "4.4.0",
-    "webpack-cli": "^2.0.10"
+    "webpack-cli": "^2.0.10",
+    "webpack-dev-server": "^3.1.14"
   }
 }

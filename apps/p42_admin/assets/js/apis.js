@@ -82,10 +82,3 @@ export class NewApiForm extends Component {
                 </Box>)
     }
 }
-
-export class ViewApi extends Component {
-    render() {
-        return (
-                <div>ViewApi</div>
-        )}
-}

@@ -17,12 +17,21 @@ config :p42_admin, P42Admin.Endpoint,
   check_origin: false,
   watchers: [
     node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      "--watch-stdin",
+      "node_modules/.bin/webpack-dev-server",
+      "-d", "--watch", "--watch-stdin",
+      "--mode", "development",
+      "--inline",
+      "--hot",
+      "--output-path", Path.expand("../priv/static/", __DIR__),
       cd: Path.expand("../assets", __DIR__)
     ]
+    # node: [
+    #   "node_modules/webpack/bin/webpack.js",
+    #   "--mode",
+    #   "development",
+    #   "--watch-stdin",
+    #   cd: Path.expand("../assets", __DIR__)
+    # ]
   ]
 
 # ## SSL Support
