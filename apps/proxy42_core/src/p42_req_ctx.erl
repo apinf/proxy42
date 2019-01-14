@@ -81,6 +81,8 @@ ctx_set(What, Val, ReqCtx) -> ?S(What, Val).
 ctx_get(incoming_ip, ReqCtx) ->
   {Addr, _Port} = ctx_get(incoming_peer, ReqCtx),
   erlang:list_to_binary(inet:ntoa(Addr));
+ctx_get(api_id, ReqCtx) ->
+  get_api_id(ReqCtx);
 ctx_get(What, ReqCtx) -> ?G(What).
 
 -spec set_domain(cowboyku_req:host(), req_ctx()) -> req_ctx().

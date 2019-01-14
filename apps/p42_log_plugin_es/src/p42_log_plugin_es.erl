@@ -34,20 +34,18 @@ log(LogInfo, ReqCtx) ->
   Events = lists:map(fun format_event/1, LogInfo),
   %% TODO: Add developer_id and user_id to log.
   Meta = lists:map(fun(X) -> {X, p42_req_ctx:ctx_get(X, ReqCtx)} end,
-                  [incoming_ip, domain, method, path,
-                   request_id, developer_id, user_id,
-                   response_code]),
+                   [incoming_ip, domain, method, path,
+                    request_id, api_id, developer_id, user_id,
+                    response_code]),
   Doc = [ {events, Events} | Meta],
   p42_es_logger:log(Doc).
 
 format_event({Time, Event, no_details}) ->
-  [{event, Event},
-   {timestamp, timestamp(Time)},
-   {timestamp_us, timestamp_us(Time)}];
+  format_event(Time, Event);
 format_event({Time, Event, Detail}) when is_atom(Detail) ->
-  [{event, key(Event, Detail)},
-   {timestamp, timestamp(Time)},
-   {timestamp_us, timestamp_us(Time)}].
+  format_event(Time, key(Event,Detail)).
+format_event(Time, Event) ->
+  {Event, timestamp(Time)}.
 
 key(E, D) ->
   E1 = erlang:atom_to_binary(E, utf8),
@@ -62,7 +60,3 @@ key(E, D) ->
 %%%-------------------------------------------------------------------
 timestamp({MegaSecs, Secs, MicroSecs}) ->
   (MegaSecs * 1000000 + Secs)*1000 + (MicroSecs div 1000).
-%% @private
-%% @doc same as above but returns microseconds
-timestamp_us({MegaSecs, Secs, MicroSecs}) ->
-  (MegaSecs * 1.0e6 + Secs)*1.0e6 + MicroSecs.
