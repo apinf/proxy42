@@ -33,35 +33,16 @@ export class AllApisTable extends Component {
         datum => <div>
           <Button label="View" onClick={() => this.props.history.push(`/apis/${datum.id}`)} />
         <Button label="Edit"
-          onClick = {
-            (e) =>
-              fetch(APIURL + "/" + datum.id).then(
-                editing => this.setState({editing})
-              ).then(console.log(this.state)).then(
-                this.setState({url: APIURL + "/" + datum.id}))
-
-          }
+          onClick = {() => this.props.history.push(`/apis/${datum.id}/edit`) }
         /></div>}
     ]}
     getAPIs().then(apis => this.setState({apis}))
   }
 
   render() {
-    let editcomponent;
-    if (this.state.editing) {
-      editcomponent = <Box> <NewApiForm hostname={this.state.editing.hostname}
-          frontend_prefix={this.state.editing.frontend_prefix}
-          backend_prefix={this.state.editing.backend_prefix}
-          auth_strategy={this.state.editing.auth_strategy}
-          editurl={this.state.url}  /> </Box>;
-    }
-    else {
-      editcomponent = <Box />;
-    }
     return (
       <Box>
         <DataTable columns={this.state.columns} data={this.state.apis} />
-        {editcomponent}
       </Box>
     )}
 }

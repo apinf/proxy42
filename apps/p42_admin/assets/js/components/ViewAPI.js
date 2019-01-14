@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { Link } from "react-router-dom";
 import { loadAPI } from "../actions";
+import CallChart from "./CallChart";
 
 @connect(
   (state, ownProps) => {
@@ -25,10 +26,8 @@ export default class ViewAPI extends Component {
     const { api } = this.props
     return  <section>
           Viewing API: {api.id}
-          <hr/>
-          {JSON.stringify(api, null, 2)}
-          <hr/>
-          {api.loaded &&
+              {api.loaded &&
+               <div>
       <table>
         <tbody>
           <tr><td>From</td><td>{api.frontend_prefix}</td></tr>
@@ -36,9 +35,13 @@ export default class ViewAPI extends Component {
           <tr><td>Auth Strategy</td><td>{api.auth_config.strategy}</td></tr>
           <tr><td>Hostname</td><td>{api.hostname}</td></tr>
         </tbody>
-           </table>
+      </table>
+                 <Link to={`/apis/${api.id}/edit`}>Edit this API</Link>
+                 <hr/>
+                 Calls per day: <br/>
+               <CallChart api_id={api.id}/>
+               </div>
           }
-      <Link to={`/apis/${api.id}/edit`}>Edit this API</Link>
     </section>;
   }
 }

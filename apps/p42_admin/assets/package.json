@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
+    "chart.js": "^1.1.1",
     "grommet": "^2.0.1",
     "grommet-icons": "^3.2.1",
     "mobx": "^5.6.0",
@@ -17,6 +18,7 @@
     "phoenix_html": "file:../../../deps/phoenix_html",
     "polished": "^2.3.1",
     "react": "^16.6.3",
+    "react-chartjs": "^1.2.0",
     "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
     "redux": "^4.0.1",

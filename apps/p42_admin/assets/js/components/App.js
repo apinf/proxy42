@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-
 import { hot } from 'react-hot-loader/root';
+import React, { Component } from 'react';
 
 import { Provider } from "react-redux";
 import store from "../store";
@@ -18,6 +17,7 @@ import {AllApisTable} from "./AllApisTable.js";
 import Home from './Home';
 import ViewAPI from './ViewAPI';
 import EditAPI from './EditAPI';
+import CallChart from './CallChart';
 
 @hot
 class App extends Component {
@@ -25,12 +25,15 @@ class App extends Component {
     return (
       <Grommet theme={grommet}>
         <Provider store={store}>
-          <Router>
+            <Router>
+            <main>
             <Route path="/" exact component={Home} />
             <Route path="/apis" exact component={AllApisTable} />
             <Route path="/apis/new" exact component={NewApiForm} />
             <Route path="/apis/:id" exact component={ViewAPI} />
             <Route path="/apis/:id/edit" exact component={EditAPI} />
+            <Route path="/analytics/calls" exact component={CallChart} />
+            </main>
           </Router>
         </Provider>,
       </Grommet>

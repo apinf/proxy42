@@ -1,3 +1,4 @@
+import { hot } from 'react-hot-loader/root';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
@@ -9,19 +10,17 @@ import { SimpleButton, Button, Collapsible, TextInput, Box, Grommet, DataTable, 
 import FormField from './FormField'
 
 
-const onSubmit = (values) => {console.log(values)}
-
-
 const mapStateToProps = (state, ownProps) => {
-    const apiId = ownProps.match.params.id
+    const apiId = ownProps.match.params.id;
     const api = state.cache.apis[apiId];
-    if(api) { return { api, initialValues: api } }
-    else { return { api: {loaded: false}}}
+    if(api) { return { api, initialValues: api }; }
+    else { return { api: {loaded: false}}; }
 };
 const mapDispatchToProps = { loadAPI, saveAPI };
 
 @connect(mapStateToProps, mapDispatchToProps)
 @reduxForm({ form: 'edit-api' })
+@hot
 export default class EditAPI extends Component {
     componentDidMount() {
         const id = this.props.match.params.id;
@@ -34,8 +33,8 @@ export default class EditAPI extends Component {
       const { api, handleSubmit, reset, submit } = this.props;
     const id = this.props.match.params.id;
     return(
-            <form onSubmit={handleSubmit(saveAPI)}>
-        Editing API with id : {id}
+            <form onSubmit={handleSubmit(this.props.saveAPI)}>
+            Editing API with id: {id}
         <FormField
         name="frontend_prefix"
           label="From"

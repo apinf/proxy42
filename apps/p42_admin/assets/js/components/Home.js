@@ -6,11 +6,10 @@ class Home extends Component {
     return(
       <section>
         Menu: (TODO: beautify)
-
         <ul>
           <li><Link to="/apis">List existing apis</Link></li>
           <li><Link to="/apis/new">Add new API</Link></li>
-          <li><Link to="/apis/123/edit">edit</Link></li>
+          <li><Link to="/analytics/calls">Call Chart</Link></li>
         </ul>
       </section>
     )
