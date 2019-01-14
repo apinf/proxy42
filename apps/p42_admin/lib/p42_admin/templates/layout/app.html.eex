@@ -12,7 +12,7 @@
       <section class="container">
         <nav role="navigation">
           <ul>
-            <li>Proxy42</li>
+            <li><a href="/">Proxy42</a></li>
           </ul>
         </nav>
       </section>
