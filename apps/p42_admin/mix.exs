@@ -45,6 +45,7 @@ defmodule P42Admin.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 1.0"}, ## XXX: 2.0 is the recommendation
+      {:httpoison, "~> 1.4"},
     ]
   end
 
