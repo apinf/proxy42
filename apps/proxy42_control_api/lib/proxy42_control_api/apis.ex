@@ -100,7 +100,42 @@ defmodule Proxy42.ControlApi.Apis do
         send_resp(conn, 400, ~s({"error": "Malformed input"})) |> halt
     end
   end
-  # TODO: Validate and transform PATCH requests
+
+    def validate_and_transform(conn = %Plug.Conn{method: "PATCH"}, _opts) do
+    params = conn.body_params
+    with_no_pipe_stupidity =
+      with true <- Map.has_key?(params, "id"),
+           {:ok, hostname} <- validate_and_transform({:hostname, params["hostname"]}),
+           {:ok, servers} <- validate_and_transform({:servers, params["servers"]}),
+           {:ok, frontend_prefix} <- validate_and_transform({:frontend_prefix, params["frontend_prefix"]}),
+           {:ok, backend_prefix} <- validate_and_transform({:backend_prefix, params["backend_prefix"]}),
+           {:ok, strategy} <- validate_and_transform({:strategy, params["strategy"]}),
+           {:ok, additional_headers} <- validate_and_transform({:additional_headers, params["additional_headers"]}),
+           {:ok, rate_limit} <- validate_and_transform({:rate_limit, params["rate_limit"]}),
+           {:ok, auth_config} <- validate_and_transform({:auth_config, params["auth_config"]}),
+           transformed_params = %{
+             :hostname => hostname,
+             :servers => servers,
+             :frontend_prefix => frontend_prefix,
+             :backend_prefix => backend_prefix,
+             :strategy => strategy,
+             :additional_headers => additional_headers,
+             :rate_limit => rate_limit,
+             :auth_config => auth_config
+           },
+        do: {:ok, transformed_params}
+    case with_no_pipe_stupidity do
+      true ->  # some idiot supplied an id
+        send_resp(conn, 400, ~s({"error": "id should not be present"})) |> halt
+      {:ok, params} -> %{conn | body_params: params}
+      {:error, reason} ->
+        send_resp(conn, 400, ~s({"error": "#{reason}"})) |> halt
+      stuff ->
+        Logger.warn "EIMPOSSIBLE: validate_and_transform: got #{inspect(stuff)}"
+        send_resp(conn, 400, ~s({"error": "Malformed input"})) |> halt
+    end
+  end
+
   # TODO: Move validation into its own module
   def validate_and_transform(conn, _opts), do: conn
 
@@ -131,6 +166,9 @@ defmodule Proxy42.ControlApi.Apis do
       end
     )
   end
+
+  ## FIXME: Ugliest hack ever. Fix get api instead
+  defp validate_and_transform({:auth_config, c = %{"strategy" => "p42_auth_key"}} ), do: {:ok, {c["strategy"], c["config_id"] || ""}}
 
   defp validate_and_transform({:auth_config, auth_config})
   when is_map(auth_config) do
