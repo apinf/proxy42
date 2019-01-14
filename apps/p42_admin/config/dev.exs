@@ -61,10 +61,10 @@ config :p42_admin, P42Admin.Endpoint,
 # Watch static and templates for browser reloading.
 config :p42_admin, P42Admin.Endpoint,
   live_reload: [
-    patterns: [
-      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
-      ~r{priv/gettext/.*(po)$},
-      ~r{lib/p42_admin/views/.*(ex)$},
-      ~r{lib/p42_admin/templates/.*(eex)$}
-    ]
+    # patterns: [
+    #   ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
+    #   ~r{priv/gettext/.*(po)$},
+    #   ~r{lib/p42_admin/views/.*(ex)$},
+    #   ~r{lib/p42_admin/templates/.*(eex)$}
+    # ]
   ]
