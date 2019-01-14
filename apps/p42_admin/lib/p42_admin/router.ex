@@ -20,10 +20,12 @@ defmodule P42Admin.Router do
 
   end
 
-  scope "/api", P42Admin do
+  scope "/api" do
     pipe_through :api
 
-    get "/stats", StatsController, :index
+    get "/stats", P42Admin.StatsController, :index
+
+    forward "/", Proxy42.ControlApi.Router
   end
 
 end

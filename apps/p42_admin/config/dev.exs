@@ -16,7 +16,7 @@ config :p42_admin,
 config :p42_admin, P42Admin.Endpoint,
   http: [port: 4000],
   debug_errors: true,
-  code_reloader: true,
+  code_reloader: false, server: true,
   check_origin: false,
   watchers: [
     node: [
@@ -64,10 +64,10 @@ config :p42_admin, P42Admin.Endpoint,
 # Watch static and templates for browser reloading.
 config :p42_admin, P42Admin.Endpoint,
   live_reload: [
-    # patterns: [
+    patterns: [
     #   ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
     #   ~r{priv/gettext/.*(po)$},
-    #   ~r{lib/p42_admin/views/.*(ex)$},
+      ~r{lib/p42_admin/views/.*(ex)$},
     #   ~r{lib/p42_admin/templates/.*(eex)$}
-    # ]
+    ]
   ]
