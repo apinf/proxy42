@@ -4,6 +4,9 @@
 # the umbrella root.
 use Mix.Config
 
+config :p42_admin,
+  es_url: "http://localhost:9200/proxy42"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

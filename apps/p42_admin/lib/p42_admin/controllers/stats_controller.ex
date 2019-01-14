@@ -9,9 +9,7 @@ defmodule P42Admin.StatsController do
       %{ "term" => %{ "api_id.keyword" => params["api_id"] } }
     else %{ "match_all" => %{} }
     end
-    IO.inspect filter
-    ## TODO: refactor this out to config
-    url = "http://localhost:9200/proxy42/_search?size=0"
+    url = Application.fetch_env!(:p42_admin, :es_url) <> "/_search"
     req_body = %{
       "size" => 0,
       "aggs" => %{
