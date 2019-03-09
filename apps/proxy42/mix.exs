@@ -33,7 +33,7 @@ defmodule Proxy42.Mixfile do
       #  github: "ninenines/cowlib", tag: "1.0.0", override: true,
       #  compile: ~s(ERLC_OPTS="+'{nowarn_deprecated_function, [{crypto, rand_bytes, 1}]}'" make all)
       # },
-      # # {:ranch, "==1.1.0", override: true},
+      # {:ranch, "==1.1.0", override: true},
       # {:ranch, github: "ninenines/ranch", tag: "1.4.0", override: true},
       # erequest_id wants uuid from hex, vegur and controlapi take from git.
       {:uuid, "~>1.7.3", hex: "uuid_erl", override: true},

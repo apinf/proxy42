@@ -7,3 +7,5 @@ test
 tmp
 erl_crash.dump
 *.ez
+Mnesia.*
+node_modules
