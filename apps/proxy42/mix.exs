@@ -28,13 +28,18 @@ defmodule Proxy42.Mixfile do
   defp overrides do
     [
       {:cowlib, "~>1.0.0", override: true},
-      {:ranch, "~>1.0", override: true},
+      {:ranch, "~>1.4.0", override: true},
+      # Higher versions of ranch require new functions in transport,
+      # and ranch proxy protocol's compilation will fail due to warnings_as_errors.
+      # Good thing maybe, even if it's unexpected behaviour. mix should remove warnings as errors in deps by default
+      # compilation happily completes with ranch 1.1, but running fails
+      # We need the function ranch:get_addr, which isn't available in 1.1
+      # The function is needed by phoenix cowboy adapter in admin.
+      # All in all, 1.4 looks like a good compromise.
       # {:cowlib,
       #  github: "ninenines/cowlib", tag: "1.0.0", override: true,
       #  compile: ~s(ERLC_OPTS="+'{nowarn_deprecated_function, [{crypto, rand_bytes, 1}]}'" make all)
       # },
-      # {:ranch, "==1.1.0", override: true},
-      # {:ranch, github: "ninenines/ranch", tag: "1.4.0", override: true},
       # erequest_id wants uuid from hex, vegur and controlapi take from git.
       {:uuid, "~>1.7.3", hex: "uuid_erl", override: true},
     ]
