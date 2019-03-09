@@ -18,7 +18,8 @@ defmodule Proxy42.Plugins.Logging.Elasticsearch.Mixfile do
   defp deps do
     [ {:poolboy, "~> 1.5"},
       {:hackney, "~> 1.13"},
-      {:jsx, "~> 2.9"}
+      {:jsx, "~> 2.9"},
+      {:proxy42, in_umbrella: true},
     ]
   end
 
@@ -38,6 +39,7 @@ defmodule Proxy42.Plugins.Logging.Elasticsearch.Mixfile do
         :poolboy,
         :hackney,
         :jsx,
+        :proxy42,
       ],
       registered: [ ]
     ]

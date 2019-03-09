@@ -22,6 +22,7 @@ defmodule Proxy42.ControlApi.Mixfile do
     [
       extra_applications: [:logger, :inets],
       # mod: {Proxy42.ControlApi.Application, []}
+      env: env(), # Default env
     ]
   end
 
@@ -43,5 +44,9 @@ defmodule Proxy42.ControlApi.Mixfile do
       {:proxy42_core, in_umbrella: true, runtime: false},
       {:corsica, "~> 1.0"},
     ]
+  end
+
+  defp env do
+    [{:port, 4001}]
   end
 end

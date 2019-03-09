@@ -24,7 +24,8 @@ defmodule P42Oauth.MixProject do
 
   defp deps do
     [
-      {:httpoison, "~> 1.0"}
+      {:httpoison, "~> 1.0"},
+      {:proxy42, in_umbrella: true},
     ]
   end
 end

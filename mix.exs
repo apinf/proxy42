@@ -12,7 +12,7 @@ defmodule Proxy42.Umbrella.Mixfile do
   defp deps do
     [
       {:recon, ">= 2.3.0"},
-      {:mix_docker, "~> 0.5.0"},
+      {:distillery, "~> 2.0"},
     ]
   end
 
