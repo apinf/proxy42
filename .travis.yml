@@ -26,8 +26,10 @@ addons:
 
 install:
   - docker build -t apinf/proxy42:travis .
-  - docker run -d -p 4001:4001 -p 8080:8080 apinf/proxy42:travis foreground
+  - docker run --name proxy42_travis -d -p 4001:4001 -p 8080:8080 apinf/proxy42:travis
   - docker ps -a
+  - sleep 10 # Ugly hack to make sure p42 is up
+  - docker logs proxy42_travis
 
 script:
   - bash ./apps/proxy42_control_api/test/apitest.sh
