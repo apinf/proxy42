@@ -69,4 +69,5 @@ config :p42_admin, P42Admin.Endpoint,
 
 # Finally import the config/prod.secret.exs which should be versioned
 # separately.
-import_config "prod.secret.exs"
+# Wildcard fails silently if file doesn't exist. Better IMO than breaking build.
+import_config "prod.*.exs"
