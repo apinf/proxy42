@@ -19,13 +19,14 @@ defmodule Proxy42.Plugins.Logging.Elasticsearch.Mixfile do
     [ {:poolboy, "~> 1.5"},
       {:hackney, "~> 1.13"},
       {:jsx, "~> 2.9"},
+      {:datum, "~> 4.5"},
       {:proxy42, in_umbrella: true},
     ]
   end
 
   defp env() do
     [ 
-      es_url: "http://localhost:9200/proxy42/logs/_bulk",
+      es_url: "http://localhost:9200/p42logs/_bulk",
     ]
   end
 
@@ -40,6 +41,7 @@ defmodule Proxy42.Plugins.Logging.Elasticsearch.Mixfile do
         :hackney,
         :jsx,
         :proxy42,
+        :datum
       ],
       registered: [ ]
     ]
