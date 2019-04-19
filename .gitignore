@@ -28,3 +28,6 @@ build
 .rebar3
 apps/vegur/ebin
 *.crashdump
+_build/
+rebar3
+

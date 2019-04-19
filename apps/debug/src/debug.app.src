@@ -1,0 +1,14 @@
+{application, debug,
+   [
+      {description, "debugger application for proxy 42"},
+      {vsn,         "0.0.0"},
+      {modules,     []},
+      {registered,  []},
+      {applications,[
+         kernel, 
+         stdlib,
+         m_http
+      ]},
+      {env, []}
+   ]
+}.
