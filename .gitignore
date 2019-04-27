@@ -21,6 +21,7 @@ erl_crash.dump
 
 # IDE's
 *.sublime-*
+TODO.md
 
 # Ignore Mnesia db folder
 Mnesia*

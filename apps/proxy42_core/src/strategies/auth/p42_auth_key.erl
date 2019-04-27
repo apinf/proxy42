@@ -31,7 +31,12 @@ terminate(_Reason) ->
 %% Allow configurable header name
 get_config(<<"bearer-auth">>) ->
   %% header/qs_val, Name, raw/bearer , keep/strip
+  {header, <<"authorization">>, bearer, strip};
+
+get_config(_) ->
+  %% define default behavior, no clear evidence when and how to config it
   {header, <<"authorization">>, bearer, strip}.
+
 
 auth(ConfigId, Req, ReqCtx) ->
   Config = get_config(ConfigId),
