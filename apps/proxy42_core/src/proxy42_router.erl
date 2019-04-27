@@ -227,5 +227,6 @@ terminate(RespStatus, Upstream, State) ->
   ok.
 
 dispatch_logs(LogInfo, State) ->
+  Message = proxy42_api_logger:message(LogInfo, State),
   LogMod = get_log_strategy(State),
-  LogMod:log(LogInfo, State).
+  LogMod:log(Message).

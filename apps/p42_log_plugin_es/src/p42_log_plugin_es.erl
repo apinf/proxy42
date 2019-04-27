@@ -5,7 +5,7 @@
 -export([start/2, prep_stop/1, stop/1, config_change/3]).
 
 %% Plugin API
--export([init/0, log/2]).
+-export([init/0, log/1]).
 
 start(_Mode, _Opts) ->
   ok = proxy42_plugins:register_plugin(?MODULE),
@@ -30,33 +30,5 @@ init() ->
   Opts = [{strategies, [{log, ?MODULE}]}],
   {ok, Opts}.
 
-log(LogInfo, ReqCtx) ->
-  Events = lists:map(fun format_event/1, LogInfo),
-  %% TODO: Add developer_id and user_id to log.
-  Meta = lists:map(fun(X) -> {X, p42_req_ctx:ctx_get(X, ReqCtx)} end,
-                   [incoming_ip, domain, method, path,
-                    request_id, api_id, developer_id, user_id,
-                    response_code]),
-  Doc = [ {events, Events} | Meta],
+log(Doc) ->
   p42_es_logger:log(Doc).
-
-format_event({Time, Event, no_details}) ->
-  format_event(Time, Event);
-format_event({Time, Event, Detail}) when is_atom(Detail) ->
-  format_event(Time, key(Event,Detail)).
-format_event(Time, Event) ->
-  {Event, timestamp(Time)}.
-
-key(E, D) ->
-  E1 = erlang:atom_to_binary(E, utf8),
-  D1 = erlang:atom_to_binary(D, utf8),
-  <<E1/binary, ":" ,D1/binary>>.
-
-%%%-------------------------------------------------------------------
-%% @private
-%% @doc Converts given erlang:timestamp() into milliseconds since
-%%  epoch.
-%% @end
-%%%-------------------------------------------------------------------
-timestamp({MegaSecs, Secs, MicroSecs}) ->
-  (MegaSecs * 1000000 + Secs)*1000 + (MicroSecs div 1000).
