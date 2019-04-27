@@ -56,10 +56,10 @@ register_api() ->
       _ > "Accept: application/json",
       _ > "Content-Type: application/json",
       _ > #{
-         <<"hostname">> => <<"example.com">>,
-         <<"servers">> => [<<"http://example.com">>],
+         <<"hostname">> => <<"httpbin.org">>,
+         <<"servers">> => [<<"http://httpbin.org">>],
          <<"frontend_prefix">> => <<"/awesome-api/">>,
-         <<"backend_prefix">> => <<"/does-this-work/">>,
+         <<"backend_prefix">> => <<"/">>,
          <<"strategy">> => <<"random">>,
          <<"rate_limit">> => 43,
          <<"additional_headers">> => <<"">>,
@@ -85,8 +85,8 @@ authorize_developer(Api, Developer) ->
 request(Key) ->
    m_http:once(
       [m_http ||
-         _ > "GET http://localhost:8080/awesome-api/",
-         _ > "Host: example.com",
+         _ > "GET http://localhost:8080/awesome-api/get",
+         _ > "Host: httpbin.org",
          _ > "Authorization: Bearer " ++ erlang:binary_to_list(Key),
 
          _ < 200,
