@@ -81,6 +81,9 @@ lookup_domain_name(IncomingDomain, Upstream, State) ->
   State5 = apply_sub_request_settings(SReqSettings, State4),
   {ok, API, Upstream, State5}.
 
+%%
+%% called by proxy42_authenticate_middleware
+%% while running request authentication
 -spec auth(req(), router_state()) -> {auth_response(),
                                       req(),
                                       router_state()}.
@@ -91,7 +94,9 @@ auth(Req, State) ->
   {PluginConfigId, AuthModule} = get_auth_info(State),
   Response0 = (catch AuthModule:auth(PluginConfigId, Req, State)),
   Response = case Response0 of
-               {'EXIT', _Reason} -> deny;
+               {'EXIT', _} = Error  ->
+                error_logger:info_report([Error]),
+                deny;
                Val -> Val
              end,
   NewState = case Response of

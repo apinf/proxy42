@@ -19,6 +19,10 @@ erl_crash.dump
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
 
+# IDE's
+*.sublime-*
+TODO.md
+
 # Ignore Mnesia db folder
 Mnesia*
 build
