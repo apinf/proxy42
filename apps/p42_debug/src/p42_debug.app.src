@@ -1,4 +1,4 @@
-{application, debug,
+{application, p42_debug,
    [
       {description, "debugger application for proxy 42"},
       {vsn,         "0.0.0"},

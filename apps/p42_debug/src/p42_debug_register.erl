@@ -1,6 +1,6 @@
 %% @doc
 %%   debug api registration workflow
--module(debug_register).
+-module(p42_debug_register).
 -compile({parse_transform, category}).
 
 -export([

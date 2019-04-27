@@ -16,13 +16,13 @@ make compile && make run
 ```erlang
 %%
 %% Initialize the debug environment
-application:ensure_all_started(debug).
+application:ensure_all_started(p42_debug).
 
 %%
 %% register the developer and api
-{ok, #{secret := Secret}} = debug_register:api().
+{ok, #{secret := Secret}} = p42_debug_register:api().
 
 %%
 %% issue request to api through proxy
-debug_register:request(Secret).
+p42_debug_register:request(Secret).
 ```
