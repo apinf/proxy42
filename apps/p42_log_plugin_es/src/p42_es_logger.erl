@@ -98,16 +98,8 @@ send_req(Url, Q) ->
 
 %%
 config_elastic_url() ->
-   os:getenv(
-      "CONFIG_ELASTIC_URL",
-      application:get_env(?APP, es_url, "http://localhost:9200/p42logs/_bulk")
-   ).
+   application:get_env(?APP, es_url).
 
 %%
 config_elastic_batch() ->
-   erlang:list_to_integer(
-      os:getenv(
-         "CONFIG_ELASTIC_BATCH",
-         application:get_env(?APP, es_bulk_size, "1000")
-      )
-   ).
+   application:get_env(?APP, es_bulk_size).
