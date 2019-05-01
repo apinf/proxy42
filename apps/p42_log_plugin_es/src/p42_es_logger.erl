@@ -94,12 +94,19 @@ enq(Doc, Queue) ->
 send_req(Url, Q) ->
    Headers = [{<<"Content-Type">>, <<"application/x-ndjson">>}],
    Body = q:list(Q),
-   hackney:request(post, Url, Headers, Body, [with_body]).
+   case hackney:request(post, Url, Headers, Body, [with_body]) of
+      {error, _} = Error ->
+         error_logger:error_report([{plugin, ?MODULE}, Error]);
+      _ ->
+         ok
+   end.
 
 %%
 config_elastic_url() ->
-   application:get_env(?APP, es_url).
+   {ok, Val} = application:get_env(?APP, es_url),
+   Val.
 
 %%
 config_elastic_batch() ->
-   application:get_env(?APP, es_bulk_size).
+   {ok, Val} = application:get_env(?APP, es_bulk_size),
+   Val.
