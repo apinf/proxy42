@@ -26,7 +26,7 @@ defmodule Proxy42.Plugins.Logging.Elasticsearch.Mixfile do
 
   defp env() do
     [ 
-      es_url: "http://localhost:9200/p42logs/_bulk",
+      es_url: "http://localhost:9200/proxy42/logs/_bulk",
     ]
   end
 
