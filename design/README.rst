@@ -7,7 +7,7 @@ is being planned.
 
 The primary aim of Proxy42 is to act as a HTTP proxy.
 
-Initial thoughts:
+Initial thoughts and design goals:
 
 - Pure erlang/otp application, that can be built into a Xen Unikernel via
   Erlang on Xen, and an executable via HiPE.
@@ -31,37 +31,19 @@ Initial thoughts:
 - Should support websocket proxying, with an option for intercepting messages
   within Proxy42
 
-Each incoming request is handled in a process of its own. This provides
-excellent isolation at little to no performance penalty thanks to Erlang VM.
 
-A brief outline of steps involved in proxying a request are as follows
+During the early stages of development, some of the goals evolved, and others had to be abandoned/postponed indefinitely.
 
-#. Acceptor pool accepts incoming requests, performs ssl termination if desired.
-#. Spawns a new process immediately and hands the socket over.
-#. The process is a gen fsm with the following phases. (gen_fsm vs gen_server?)
+HTTP parsing is nontrivial, even if it looks simple at first glance. It is
+already implemented in libraries like cowlib, redoing the work is pointless.
+We can build on top of existing erlang webservers. After a few exploratory
+investigations, we settled on vegur (backed by cowboyku - a fork of cowboy 0.9)
+to handle low level http interactions and to focus on developing routing,
+control and metrics.
 
-   - Parse headers and url
-   - Identify config: target upstream server, auth, rate limits
-   - Perform auth: Pluggable adapters? JWT based? Stored tokens?
-   - Check rate limits
-   - Forward to admin app or proxy app as appropriate.
-   - Initiate proxying, wait for response
-   - Add ``X-RateLimit-*`` and other headers, stream response
-   - Clean up and close the connection
-
-   Timestamps are recorded at each step in the process state, and sent to
-   analytics subsystem
-
-Analytics subsystem uses pluggable adapters. The adapters are expected to
-handle the following data:
-
-#. Counters for requests received, bytes transferred, etc
-#. Consolidated timing information.
-
-We will very likely have a default adapter backed by ets/mnesia with limited
-functionality, and a few adapters to stream the events or their aggregates to
-various tools over TCP/UDP.
-
-We need to store time taken per phase for each request to be able to chart the
-trends.  This data may be compacted into summaries (mean, median, stddev, etc)
-once in a while to save space. Details yet to be worked out.
+Current status
+==============
+We currently support only plain HTTP 1.1. Mnesia is used for internal storage.
+Clustering is not officially supported yet, though it is kept in mind when
+designing the components. A minimal Admin API exists, with plans of overhauling
+it entirely.
