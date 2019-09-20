@@ -27,6 +27,7 @@ defmodule Proxy42.Core.Mixfile do
       {:plugins, [
           :p42_auth_always,
           :p42_auth_key,
+          :p42_auth_vienna,
           :p42_rl_ftbucket,
         ]},
     ]
