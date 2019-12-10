@@ -116,9 +116,9 @@ handle_backend_response(Code, Status, RespHeaders, Req, State) ->
     {Type, Req4} = cowboyku_req:meta(request_type, Req3, []),
     case lists:sort(Type) of
         [] ->
-            http_request(Code, Status, RespHeaders, Req4, State);
+            http_request(Code, Status, RespHeaders2, Req4, State);
         [upgrade] ->
-            upgrade_request(Code, Status, RespHeaders, Req4, State)
+            upgrade_request(Code, Status, RespHeaders2, Req4, State)
     end.
 
 upgrade_request(101, Status, Headers, Req, #state{backend_client=BackendClient}=State) ->
