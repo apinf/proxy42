@@ -15,7 +15,7 @@ use Mix.Config
 # before starting your production server.
 config :p42_admin, P42Admin.Endpoint,
   http: [:inet6, port: System.get_env("PORT") || 4000],
-  url: [host: "example.com", port: 80],
+  url: [host: "example.com", port: 80]
 #  cache_static_manifest: "priv/static/cache_manifest.json"
 
 # ## SSL Support
